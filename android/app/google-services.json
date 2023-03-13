@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "493243078840",
+    "project_id": "safeline-775d3",
+    "storage_bucket": "safeline-775d3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:493243078840:android:81526e9124e3d67101fc4d",
+        "android_client_info": {
+          "package_name": "com.example.safe_line"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "493243078840-4ggh47ri952pratodk00uu0ij912bvf4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCS3Z4S3pITL81sfweEIFgpmLH5i07hJFc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "493243078840-4ggh47ri952pratodk00uu0ij912bvf4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "493243078840-mt3vdtiuog5mj7b7fbdl0ri7g5819kta.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.safeLine"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
