@@ -1,6 +1,7 @@
 // home page widgets
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:safe_line/routes.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,6 +11,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int navBarIdx = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +41,18 @@ class _HomePageState extends State<HomePage> {
           children: const [Text("Home Page!")],
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+            BottomNavigationBarItem(icon: Icon(Icons.map), label: "Subway Line")
+          ],
+          currentIndex: navBarIdx,
+          onTap: (int index) {
+            setState(() {
+              navBarIdx = index;
+              // need to update screen here
+            });
+          }),
     );
   }
 }

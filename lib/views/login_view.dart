@@ -1,7 +1,9 @@
 // login widgets
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:safe_line/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:safe_line/views/all_views.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,8 +15,9 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late final TextEditingController _email;
   late final TextEditingController _password;
+
   static const invalidBar = SnackBar(
-    content: Text("Invalid Email..."),
+    content: Text("Email not found..."),
     backgroundColor: Colors.blue,
     duration: Duration(seconds: 1),
   );
@@ -59,7 +62,9 @@ class _LoginPageState extends State<LoginPage> {
               Text("Safe Line",
                   style: GoogleFonts.acme(
                       textStyle: const TextStyle(fontSize: 100))),
-              const SizedBox(height: 130,),
+              const SizedBox(
+                height: 130,
+              ),
               SizedBox(
                   width: 300,
                   child: TextField(
@@ -93,9 +98,21 @@ class _LoginPageState extends State<LoginPage> {
                         final email = _email.text;
                         final password = _password.text;
                         try {
-                          final userCreds = await FirebaseAuth.instance
+                          final loggedUser = await FirebaseAuth.instance
                               .signInWithEmailAndPassword(
-                                  email: email, password: password);
+                            email: email,
+                            password: password,
+                          );
+                          if (loggedUser.user!.emailVerified) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              homeRoute,
+                              (route) => false,
+                            );
+                          } else {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    VerifyEmailPage(currentUser: loggedUser.user!)));
+                          }
                         } on FirebaseAuthException catch (except) {
                           if (except.code == "user-not-found") {
                             ScaffoldMessenger.of(context)
@@ -117,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/register/', (route) => false);
+                              registerRoute, (route) => false);
                         },
                         child: const Text("Sign Up"))
                   ],

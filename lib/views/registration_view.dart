@@ -1,5 +1,6 @@
 // sign-up widgets
 import 'package:flutter/material.dart';
+import 'package:safe_line/routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -12,6 +13,22 @@ class RegistrationPage extends StatefulWidget {
 class _RegistrationPageState extends State<RegistrationPage> {
   late final TextEditingController _email;
   late final TextEditingController _password;
+
+  static const invalidEmail = SnackBar(
+    content: Text("Email not valid."),
+    backgroundColor: Colors.blue,
+    duration: Duration(seconds: 1),
+  );
+  static const emailInUse = SnackBar(
+    content: Text("Email already regsitered."),
+    backgroundColor: Colors.blue,
+    duration: Duration(seconds: 1),
+  );
+  static const weakPassword = SnackBar(
+    content: Text("Password too weak..."),
+    backgroundColor: Colors.blue,
+    duration: Duration(seconds: 1),
+  );
 
   @override
   void initState() {
@@ -73,13 +90,28 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       onPressed: () async {
                         final email = _email.text;
                         final password = _password.text;
-                        final newCreds = await FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                                email: email, password: password);
-                        final User? newUser = newCreds.user;
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                VerifyEmailPage(currentUser: newUser)));
+                        try {
+                          final newCreds = await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                            email: email,
+                            password: password,
+                          );
+                          final User? newUser = newCreds.user;
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  VerifyEmailPage(currentUser: newUser)));
+                        } on FirebaseAuthException catch (except) {
+                          if (except.code == "weak-password") {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(weakPassword);
+                          } else if (except.code == "email-already-in-use") {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(emailInUse);
+                          } else if (except.code == "invalid-email") {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(invalidEmail);
+                          }
+                        }
                       },
                       child: const Text("Create Account"))),
               const SizedBox(height: 15),
@@ -88,11 +120,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Have an account?"),
+                    const Text("Already registered?"),
                     TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/login/', (route) => false);
+                              loginRoute, (route) => false);
                         },
                         child: const Text("Log In"))
                   ],
@@ -106,6 +138,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 }
 
+// verify email page
 class VerifyEmailPage extends StatefulWidget {
   final User? currentUser;
 
@@ -122,20 +155,24 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Verify Email")),
+      appBar: AppBar(title: const Text("Email Verification")),
       body: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Quick Verification Required :)"),
+            Image.asset('media/email_verification.png', height: 200),
+            const SizedBox(height:50),
+            const Text("Email verification is required to register your account."),
             TextButton(
                 onPressed: () async {
                   await widget.currentUser?.sendEmailVerification();
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil('/login/', (route) => false);
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    loginRoute,
+                    (route) => false,
+                  );
                 },
-                child: const Text("Verify Your Email "))
+                child: const Text("Verify My Email "))
           ],
         ),
       ),

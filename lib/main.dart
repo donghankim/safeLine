@@ -1,14 +1,12 @@
-import 'dart:developer' as tools;
+// import 'dart:developer' as tools;
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'firebase_options.dart';
-import 'views/all.dart';
-import 'base.dart';
+import 'package:safe_line/firebase_options.dart';
+import 'package:safe_line/views/all_views.dart';
+import 'package:safe_line/routes.dart';
 
 void main() {
-  // runApp(const MyApp());
-
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MaterialApp(
@@ -17,8 +15,9 @@ void main() {
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const StartPage(),
       routes: {
-        '/login/': (context) => const LoginPage(),
-        '/register/': (context) => const RegistrationPage(),
+        loginRoute: (context) => const LoginPage(),
+        registerRoute: (context) => const RegistrationPage(),
+        homeRoute: (context) => const HomePage()
       },
     ),
   );
@@ -36,11 +35,11 @@ class StartPage extends StatelessWidget {
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              final user = FirebaseAuth.instance.currentUser;
-              tools.log(user.toString());
+              final User? user = FirebaseAuth.instance.currentUser;
               if (user != null && user.emailVerified) {
                 return const HomePage();
-              } else {
+              }
+              else {
                 return const LoginPage();
               }
             default:

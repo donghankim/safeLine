@@ -66,6 +66,7 @@ flutter:
     - media/columbia_crest.png
     - media/manhattan.png
     - media/subway.png
+    - media/email_verification.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

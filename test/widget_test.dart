@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:safe_line/views/all.dart';
+import 'package:safe_line/views/all_views.dart';
 
 
 void main() {
