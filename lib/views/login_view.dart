@@ -1,9 +1,9 @@
 // login widgets
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:safe_line/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:safe_line/views/all_views.dart';
+import 'package:safe_line/auth/auth_service.dart';
+import 'package:safe_line/auth/auth_exceptions.dart';
+import 'package:safe_line/routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,17 +15,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late final TextEditingController _email;
   late final TextEditingController _password;
-
-  static const invalidBar = SnackBar(
-    content: Text("Email not found..."),
-    backgroundColor: Colors.blue,
-    duration: Duration(seconds: 1),
-  );
-  static const incorrectBar = SnackBar(
-    content: Text("Incorrect Password!"),
-    backgroundColor: Colors.blue,
-    duration: Duration(seconds: 1),
-  );
 
   @override
   void initState() {
@@ -39,6 +28,20 @@ class _LoginPageState extends State<LoginPage> {
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<bool> loginUser(String email, String password) async {
+    try {
+      await AuthService.firebase().login(email: email, password: password);
+      return true;
+    } on InvalidEmailException {
+      ScaffoldMessenger.of(context).showSnackBar(email404Bar);
+    } on IncorrectPasswordException {
+      ScaffoldMessenger.of(context).showSnackBar(incorrectPasswordBar);
+    } catch (_) {
+      await showErrorDialog(context);
+    }
+    return false;
   }
 
   @override
@@ -95,31 +98,12 @@ class _LoginPageState extends State<LoginPage> {
                   width: 300,
                   child: ElevatedButton(
                       onPressed: () async {
-                        final email = _email.text;
-                        final password = _password.text;
-                        try {
-                          final loggedUser = await FirebaseAuth.instance
-                              .signInWithEmailAndPassword(
-                            email: email,
-                            password: password,
-                          );
-                          if (loggedUser.user!.emailVerified) {
+                        if (await loginUser(_email.text, _password.text)) {
+                          if (context.mounted) {
                             Navigator.of(context).pushNamedAndRemoveUntil(
                               homeRoute,
                               (route) => false,
                             );
-                          } else {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    VerifyEmailPage(currentUser: loggedUser.user!)));
-                          }
-                        } on FirebaseAuthException catch (except) {
-                          if (except.code == "user-not-found") {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(invalidBar);
-                          } else if (except.code == "wrong-password") {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(incorrectBar);
                           }
                         }
                       },

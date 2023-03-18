@@ -1,7 +1,8 @@
 // sign-up widgets
 import 'package:flutter/material.dart';
+import 'package:safe_line/auth/auth_service.dart';
+import 'package:safe_line/auth/auth_exceptions.dart';
 import 'package:safe_line/routes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -13,22 +14,6 @@ class RegistrationPage extends StatefulWidget {
 class _RegistrationPageState extends State<RegistrationPage> {
   late final TextEditingController _email;
   late final TextEditingController _password;
-
-  static const invalidEmail = SnackBar(
-    content: Text("Email not valid."),
-    backgroundColor: Colors.blue,
-    duration: Duration(seconds: 1),
-  );
-  static const emailInUse = SnackBar(
-    content: Text("Email already regsitered."),
-    backgroundColor: Colors.blue,
-    duration: Duration(seconds: 1),
-  );
-  static const weakPassword = SnackBar(
-    content: Text("Password too weak..."),
-    backgroundColor: Colors.blue,
-    duration: Duration(seconds: 1),
-  );
 
   @override
   void initState() {
@@ -42,6 +27,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<bool> registerUser(String email, String password) async {
+    try {
+      await AuthService.firebase()
+          .registerUser(email: email, password: password);
+      return true;
+    } on EmailTakenException {
+      ScaffoldMessenger.of(context).showSnackBar(emailInUseBar);
+    } on InvalidEmailException {
+      ScaffoldMessenger.of(context).showSnackBar(invalidEmailBar);
+    } on WeakPassWordException {
+      ScaffoldMessenger.of(context).showSnackBar(weakPasswordBar);
+    } catch (_) {
+      await showErrorDialog(context);
+    }
+    return false;
   }
 
   @override
@@ -88,28 +90,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   width: 300,
                   child: ElevatedButton(
                       onPressed: () async {
-                        final email = _email.text;
-                        final password = _password.text;
-                        try {
-                          final newCreds = await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
-                            email: email,
-                            password: password,
-                          );
-                          final User? newUser = newCreds.user;
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  VerifyEmailPage(currentUser: newUser)));
-                        } on FirebaseAuthException catch (except) {
-                          if (except.code == "weak-password") {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(weakPassword);
-                          } else if (except.code == "email-already-in-use") {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(emailInUse);
-                          } else if (except.code == "invalid-email") {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(invalidEmail);
+                        if (await registerUser(_email.text, _password.text)) {
+                          if (context.mounted) {
+                            Navigator.pushNamed(context, emailVerifyRoute);
                           }
                         }
                       },
@@ -140,12 +123,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
 // verify email page
 class VerifyEmailPage extends StatefulWidget {
-  final User? currentUser;
-
-  const VerifyEmailPage({
-    Key? key,
-    required this.currentUser,
-  }) : super(key: key);
+  const VerifyEmailPage({Key? key}) : super(key: key);
 
   @override
   State<VerifyEmailPage> createState() => _VerifyEmailPageState();
@@ -162,15 +140,13 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('media/email_verification.png', height: 200),
-            const SizedBox(height:50),
-            const Text("Email verification is required to register your account."),
+            const SizedBox(height: 50),
+            const Text(
+                "Email verification is required to register your account."),
             TextButton(
                 onPressed: () async {
-                  await widget.currentUser?.sendEmailVerification();
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    loginRoute,
-                    (route) => false,
-                  );
+                  AuthService.firebase().sendVerification();
+                  Navigator.pop(context);
                 },
                 child: const Text("Verify My Email "))
           ],

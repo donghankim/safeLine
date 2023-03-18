@@ -1,7 +1,6 @@
 // home page widgets
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:safe_line/routes.dart';
+import 'package:safe_line/auth/auth_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,10 +22,12 @@ class _HomePageState extends State<HomePage> {
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              _signOut();
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil('/login/', (route) => false);
+            onPressed: () async {
+              await AuthService.firebase().logout();
+              if (context.mounted) {
+                Navigator.of(context)
+                .pushNamedAndRemoveUntil('/login/', (route) => false);
+              }
             },
           ),
         ],
@@ -55,8 +56,4 @@ class _HomePageState extends State<HomePage> {
           }),
     );
   }
-}
-
-Future<void> _signOut() async {
-  await FirebaseAuth.instance.signOut();
 }

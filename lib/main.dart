@@ -1,8 +1,6 @@
 // import 'dart:developer' as tools;
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:safe_line/firebase_options.dart';
+import 'package:safe_line/auth/all_auth.dart';
 import 'package:safe_line/views/all_views.dart';
 import 'package:safe_line/routes.dart';
 
@@ -17,7 +15,8 @@ void main() {
       routes: {
         loginRoute: (context) => const LoginPage(),
         registerRoute: (context) => const RegistrationPage(),
-        homeRoute: (context) => const HomePage()
+        homeRoute: (context) => const HomePage(),
+        emailVerifyRoute: (context) => const VerifyEmailPage(),
       },
     ),
   );
@@ -30,16 +29,14 @@ class StartPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform),
+        future: AuthService.firebase().initialize(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              final User? user = FirebaseAuth.instance.currentUser;
-              if (user != null && user.emailVerified) {
+              final user = AuthService.firebase().currentUser;
+              if (user != null && user.isVerified) {
                 return const HomePage();
-              }
-              else {
+              } else {
                 return const LoginPage();
               }
             default:
