@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
           height: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage("media/subway.png"),
+              image: AssetImage("asset/images/subway.png"),
               fit: BoxFit.cover,
             ),
           ),
@@ -117,8 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Text("Dont't Have an account?"),
                     TextButton(
                         onPressed: () {
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                              registerRoute, (route) => false);
+                          Navigator.pushNamed(context, registerRoute);
                         },
                         child: const Text("Sign Up"))
                   ],

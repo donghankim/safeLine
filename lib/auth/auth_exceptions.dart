@@ -67,3 +67,9 @@ const incorrectPasswordBar = SnackBar(
   backgroundColor: Colors.blue,
   duration: Duration(seconds: 1),
 );
+
+const passwordDiffBar = SnackBar(
+  content: Text("Oops, your password did not match"),
+  backgroundColor: Colors.blue,
+  duration: Duration(seconds: 1),
+);

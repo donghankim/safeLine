@@ -1,6 +1,7 @@
 // home page widgets
 import 'package:flutter/material.dart';
-import 'package:safe_line/auth/auth_service.dart';
+import 'package:safe_line/routes.dart';
+import 'package:safe_line/views/tabs/all_tabs.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,50 +11,88 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int navBarIdx = 0;
+  List<Widget> allTabs = const [
+    TabWidget(iconPath: 'asset/icons/reports_icon.png'),
+    TabWidget(iconPath: 'asset/icons/news_icon.png'),
+    TabWidget(iconPath: 'asset/icons/subway_icon.png'),
+    TabWidget(iconPath: 'asset/icons/leader_icon.png'),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: const Text("Safe Line",
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () async {
-              await AuthService.firebase().logout();
-              if (context.mounted) {
-                Navigator.of(context)
-                .pushNamedAndRemoveUntil('/login/', (route) => false);
-              }
-            },
+    return DefaultTabController(
+      length: allTabs.length,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: false,
+          title: const Text(
+            "Safe Line",
+            style: TextStyle(color: Colors.black),
           ),
-        ],
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [Text("Home Page!")],
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: IconButton(
+                icon: Icon(Icons.person, color: Colors.grey[800], size: 32),
+                onPressed: () async {
+                  Navigator.pushNamed(context, settingsRoute);
+                },
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: <Widget>[
+              const SizedBox(
+                height: 32,
+              ),
+              TabBar(
+                tabs: allTabs,
+                isScrollable: true,
+              ),
+              Expanded(
+                  child: TabBarView(
+                children: [
+                  ReportTabBar(),
+                  NewsTabBar(),
+                  MapTabBar(),
+                  LeaderTabBar(),
+                ],
+              ))
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // TODO
+          },
+          child: const Icon(Icons.add),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(icon: Icon(Icons.map), label: "Subway Line")
-          ],
-          currentIndex: navBarIdx,
-          onTap: (int index) {
-            setState(() {
-              navBarIdx = index;
-              // need to update screen here
-            });
-          }),
+    );
+  }
+}
+
+class TabWidget extends StatelessWidget {
+  final String iconPath;
+
+  const TabWidget({super.key, required this.iconPath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tab(
+      height: 64,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Image.asset(iconPath),
+      ),
     );
   }
 }

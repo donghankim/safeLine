@@ -1,4 +1,4 @@
-// import 'dart:developer' as tools;
+// import 'dart:developer' as tools; -> for logging instead of print();
 import 'package:flutter/material.dart';
 import 'package:safe_line/auth/all_auth.dart';
 import 'package:safe_line/views/all_views.dart';
@@ -17,6 +17,7 @@ void main() {
         registerRoute: (context) => const RegistrationPage(),
         homeRoute: (context) => const HomePage(),
         emailVerifyRoute: (context) => const VerifyEmailPage(),
+        settingsRoute: (context) => const SettingsPage(),
       },
     ),
   );

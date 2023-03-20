@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:safe_line/auth/all_auth.dart';
 import 'package:safe_line/models/users.dart';
 
@@ -53,6 +54,7 @@ class FirebaseProvider implements AuthProvider {
   Future<AppUser> registerUser({
     required String email,
     required String password,
+    required String name,
   }) async {
     try {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -61,6 +63,8 @@ class FirebaseProvider implements AuthProvider {
       );
       final user = currentUser;
       if (user != null) {
+        user.displayName = name;
+        addUser(user);
         return user;
       } else {
         throw GenericAuthException();
@@ -78,6 +82,13 @@ class FirebaseProvider implements AuthProvider {
     } catch (_) {
       throw GenericAuthException();
     }
+  }
+
+  Future addUser(AppUser user) async {
+    await FirebaseFirestore.instance.collection('users').add({
+      'DisplayName': user.displayName,
+      'Email': user.email,
+    });
   }
 
   @override

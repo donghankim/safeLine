@@ -1,14 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
-
-// TODO:
-// 1. keep track of all posts AppUser posts
-// 2. merge leaderboard
+import 'package:safe_line/models/reports.dart';
 
 class AppUser {
   final String id;
   final String? email;
-  final String? displayName;
   final bool isVerified;
+  String? displayName;
+  List<Report> userPosts = [];
   int score = 0;
 
   AppUser(

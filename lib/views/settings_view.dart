@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:safe_line/auth/auth_service.dart';
-import 'package:safe_line/auth/auth_exceptions.dart';
-import 'package:safe_line/routes.dart';
 
-class RegistrationPage extends StatefulWidget {
-  const RegistrationPage({Key? key}) : super(key: key);
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
 
   @override
-  State<RegistrationPage> createState() => _RegistrationPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _RegistrationPageState extends State<RegistrationPage> {
+class _SettingsPageState extends State<SettingsPage> {
   late final TextEditingController _name;
   late final TextEditingController _email;
   late final TextEditingController _password;
   late final TextEditingController _confirmPassword;
+  final user = AuthService.firebase().currentUser;
 
   @override
   void initState() {
-    _name = TextEditingController();
-    _email = TextEditingController();
+    _name = TextEditingController(text: user?.displayName);
+    _email = TextEditingController(text: user?.email);
     _password = TextEditingController();
     _confirmPassword = TextEditingController();
     super.initState();
@@ -34,27 +33,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
     super.dispose();
   }
 
-  Future<bool> registerUser(String email, String password, String name) async {
-    try {
-      await AuthService.firebase()
-          .registerUser(email: email, password: password, name: name);
-
-      return true;
-    } on EmailTakenException {
-      ScaffoldMessenger.of(context).showSnackBar(emailInUseBar);
-    } on InvalidEmailException {
-      ScaffoldMessenger.of(context).showSnackBar(invalidEmailBar);
-    } on WeakPassWordException {
-      ScaffoldMessenger.of(context).showSnackBar(weakPasswordBar);
-    } catch (_) {
-      await showErrorDialog(context);
-    }
-    return false;
+  // TODO
+  Future<bool> updateUser(String email, String password, String name) async {
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        title: const Text("User Settings"),
+
+      ),
       body: Center(
         child: Container(
           alignment: Alignment.center,
@@ -65,7 +56,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // TODO: add decorative UI
+              // TODO: add some decorative UI
 
               // name text input
               SizedBox(
@@ -106,7 +97,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       decoration: const InputDecoration(
                           fillColor: Colors.white,
                           border: OutlineInputBorder(),
-                          labelText: "Password"))),
+                          labelText: "New Password"))),
               const SizedBox(height: 15),
 
               // confirm password text input
@@ -129,72 +120,27 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   height: 50,
                   child: ElevatedButton(
                       onPressed: () async {
-                        if (_password.text == _confirmPassword.text) {
-                          if (await registerUser(
-                              _email.text, _password.text, _name.text)) {
-                            if (context.mounted) {
-                              Navigator.pushNamed(context, emailVerifyRoute);
-                            }
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(passwordDiffBar);
+                        // TODO
+                      },
+                      child: const Text("Update Account"))),
+              const SizedBox(height: 15),
+
+              // logout button
+              SizedBox(
+                  width: 250,
+                  height: 50,
+                  child: ElevatedButton(
+                      onPressed: () async {
+                        await AuthService.firebase().logout();
+                        if (context.mounted) {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/login/', (route) => false);
                         }
                       },
-                      child: const Text("Create Account"))),
+                      child: const Text("Logout"))),
               const SizedBox(height: 15),
-              SizedBox(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Already registered?"),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text("Log In"))
-                  ],
-                ),
-              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// verify email page
-class VerifyEmailPage extends StatefulWidget {
-  const VerifyEmailPage({Key? key}) : super(key: key);
-
-  @override
-  State<VerifyEmailPage> createState() => _VerifyEmailPageState();
-}
-
-class _VerifyEmailPageState extends State<VerifyEmailPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Email Verification")),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('asset/images/email_verification.png', height: 200),
-            const SizedBox(height: 50),
-            const Text(
-                "Email verification is required to register your account."),
-            TextButton(
-                onPressed: () async {
-                  AuthService.firebase().sendVerification();
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil(loginRoute, (route) => false);
-                },
-                child: const Text("Verify My Email "))
-          ],
         ),
       ),
     );
