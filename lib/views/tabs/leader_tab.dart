@@ -8,10 +8,6 @@ class LeaderTabBar extends StatefulWidget {
   State<LeaderTabBar> createState() => _LeaderTabBarState();
 }
 
-// TODO:
-// 1. get all users from firestore
-// 2. sort based on user.score
-
 class Player {
   String name;
   String option;
