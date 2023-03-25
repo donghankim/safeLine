@@ -34,10 +34,10 @@ class StartPage extends StatelessWidget {
           builder: (BuildContext context, BoxConstraints constraints) {
         return SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: Container(
+          child: SizedBox(
               height: 969.5,
               child: Stack(children: [
-                Container(
+                SizedBox(
                     width: constraints.maxWidth,
                     child: Container(
                       width: 428.0,
