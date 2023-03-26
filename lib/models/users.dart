@@ -6,7 +6,7 @@ class AppUser {
   final String? email;
   final bool isVerified;
   String? displayName;
-  List<Report> userPosts = [];
+  // List<Report> userPosts = [];
   int score = 0;
 
   AppUser(

@@ -1,14 +1,12 @@
 // home page widgets
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:safe_line/routes.dart';
+import 'package:safe_line/models/users.dart';
 import 'package:safe_line/tabViews/all_tabs.dart';
-import 'package:safe_line/customWidgets/title_widget.dart';
-import 'package:safe_line/customWidgets/profile_widget.dart';
 import 'package:safe_line/constants.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final AppUser currUser;
+  const HomePage({super.key, required this.currUser});
 
   @override
   State<HomePage> createState() => _HomePageState();

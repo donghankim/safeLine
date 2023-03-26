@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:safe_line/routes.dart';
+import 'package:safe_line/views/home_view.dart';
 import 'package:safe_line/auth/auth_service.dart';
 import 'package:safe_line/auth/auth_exceptions.dart';
 
@@ -60,7 +61,8 @@ class _FormWidgetState extends State<FormWidget> {
     return false;
   }
 
-  Future<bool> registerUser(String email, String password, String passwordConfirm, String name) async {
+  Future<bool> registerUser(String email, String password,
+      String passwordConfirm, String name) async {
     if (password == passwordConfirm) {
       try {
         await AuthService.firebase()
@@ -251,7 +253,8 @@ class _FormWidgetState extends State<FormWidget> {
           height: 40,
           child: ElevatedButton(
             onPressed: () async {
-              if (await registerUser(_email.text, _password.text, _confirmPassword.text, _name.text)) {
+              if (await registerUser(_email.text, _password.text,
+                  _confirmPassword.text, _name.text)) {
                 if (context.mounted) {
                   Navigator.pushNamed(context, emailVerifyRoute);
                 }
@@ -404,11 +407,14 @@ class _FormWidgetState extends State<FormWidget> {
           child: ElevatedButton(
             onPressed: () async {
               if (await loginUser(_email.text, _password.text)) {
+                final user = AuthService.firebase().currentUser;
                 if (context.mounted) {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    homeRoute,
-                    (route) => false,
-                  );
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(currUser: user!),
+                    ),
+                    (route) => false);
                 }
               }
             },

@@ -87,7 +87,9 @@ class FirebaseProvider implements AuthProvider {
   Future addUser(AppUser user) async {
     await FirebaseFirestore.instance.collection('users').add({
       'DisplayName': user.displayName,
+      'UID': user.id,
       'Email': user.email,
+      'Score': user.score,
     });
   }
 

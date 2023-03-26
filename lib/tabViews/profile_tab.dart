@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:safe_line/auth/auth_service.dart';
 
 class ProfileTabBar extends StatefulWidget {
   const ProfileTabBar({super.key});
@@ -10,6 +11,15 @@ class ProfileTabBar extends StatefulWidget {
 class _ProfileTabBarState extends State<ProfileTabBar> {
   @override
   Widget build(BuildContext context) {
-    return const Text("asd");
+    return ElevatedButton(
+      onPressed: () async {
+        await AuthService.firebase().logout();
+        if (context.mounted) {
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/login/', (route) => false);
+        }
+      },
+      child: const Text("Logout"),
+    );
   }
 }
