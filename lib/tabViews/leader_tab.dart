@@ -87,8 +87,8 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 25,
-            height: 25,
+            width: 30,
+            height: 30,
             child: Text(
               (rank + 1).toString(),
               style: const TextStyle(
@@ -99,7 +99,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
             ),
           ),
           SizedBox(
-            width: 275,
+            width: 300,
             height: cardHeight,
             child: Stack(
               children: [
@@ -123,7 +123,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
                             fontWeight: FontWeight.w700,
                             color: accentColor),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 5,
                       ),
                       Text(

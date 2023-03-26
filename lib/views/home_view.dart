@@ -1,57 +1,9 @@
 // home page widgets
 import 'package:flutter/material.dart';
+import 'package:safe_line/constants.dart';
 import 'package:safe_line/models/users.dart';
 import 'package:safe_line/tabViews/all_tabs.dart';
-import 'package:safe_line/constants.dart';
-
-class HomePage extends StatefulWidget {
-  final AppUser currUser;
-  const HomePage({super.key, required this.currUser});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      initialIndex: 2,
-      length: 4,
-      child: Scaffold(
-        backgroundColor: slBgColor,
-        appBar: AppBar(
-          toolbarHeight: 10,
-          backgroundColor: accentColor,
-          bottom: PreferredSize(
-              preferredSize: _allTabs.preferredSize, child: _allTabs),
-        ),
-        body: Center(
-          child: Column(
-            children: [
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    MapTabBar(),
-                    NewsTabBar(),
-                    LeaderTabBar(),
-                    ProfileTabBar(),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // TODO
-          },
-          child: const Icon(Icons.add),
-        ),
-      ),
-    );
-  }
-}
+import 'package:safe_line/customWidgets/toggle_button.dart';
 
 TabBar get _allTabs => const TabBar(
       unselectedLabelColor: Colors.white,
@@ -69,24 +21,315 @@ TabBar get _allTabs => const TabBar(
       ],
     );
 
-// not used
-class TabWidget extends StatelessWidget {
-  final String icon;
+List<SubwayButton> allStations = [];
 
-  const TabWidget({super.key, required this.icon});
+class HomePage extends StatefulWidget {
+  final AppUser currUser;
+  const HomePage({super.key, required this.currUser});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return Tab(
-      height: 70,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 232, 232, 232),
-          borderRadius: BorderRadius.circular(8),
+    return DefaultTabController(
+      initialIndex: 0,
+      length: 4,
+      child: Scaffold(
+        backgroundColor: slBgColor,
+        appBar: AppBar(
+          toolbarHeight: 5,
+          backgroundColor: accentColor,
+          bottom: PreferredSize(
+              preferredSize: _allTabs.preferredSize, child: _allTabs),
         ),
-        child: Image.asset(icon),
-        // child: Icon(Icons.{$.icon}),
+        body: Center(
+          child: Column(
+            children: const [
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    MapTabBar(),
+                    NewsTabBar(),
+                    LeaderTabBar(),
+                    ProfileTabBar(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 25, 15),
+          child: SizedBox(
+            width: 70,
+            height: 70,
+            child: FittedBox(
+              child: FloatingActionButton(
+                onPressed: () async {
+                  await reportIncident(context);
+                },
+                backgroundColor: accentColor,
+                child: const Icon(Icons.add),
+              ),
+            ),
+          ),
+        ),
       ),
+    );
+  }
+
+  Future<void> reportIncident(BuildContext context) async {
+    final TextEditingController _descriptionController =
+        TextEditingController();
+    String dropdownVal = 'Uptown';
+
+    return await showDialog(
+      context: context,
+      builder: (context) {
+        return Container(
+          child: AlertDialog(
+            backgroundColor: slBgColor,
+            content: Form(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Train Line",
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(width: 20),
+                      DropdownButton<String>(
+                        value: dropdownVal,
+                        underline: Container(height: 2, color: accentColor),
+                        onChanged: (String? newVal) {
+                          setState(() {
+                            dropdownVal = newVal!;
+                          });
+                        },
+                        items: const [
+                          DropdownMenuItem<String>(
+                            alignment: Alignment.center,
+                            value: 'Uptown',
+                            child: Text(
+                              "Uptown",
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          DropdownMenuItem<String>(
+                            value: 'Downtown',
+                            child: Text("Downtown"),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  // subway line buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SubwayButton(
+                          buttonText: "1",
+                          buttonColor: Colors.deepOrange,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "2",
+                          buttonColor: Colors.deepOrange,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "3",
+                          buttonColor: Colors.deepOrange,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "4",
+                          buttonColor: Colors.green,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "5",
+                          buttonColor: Colors.green,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "6",
+                          buttonColor: Colors.green,
+                          state: false),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SubwayButton(
+                          buttonText: "A",
+                          buttonColor: Colors.lightBlue,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "C",
+                          buttonColor: Colors.lightBlue,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "E",
+                          buttonColor: Colors.lightBlue,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "SIR",
+                          buttonColor: Colors.blue,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "G",
+                          buttonColor: Colors.lightGreen,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "7",
+                          buttonColor: Colors.purple,
+                          state: false),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SubwayButton(
+                          buttonText: "B",
+                          buttonColor: Colors.orange,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "D",
+                          buttonColor: Colors.orange,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "F",
+                          buttonColor: Colors.orange,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "M",
+                          buttonColor: Colors.orange,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "J",
+                          buttonColor: Colors.brown,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "Z",
+                          buttonColor: Colors.pink,
+                          state: false),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SubwayButton(
+                          buttonText: "N",
+                          buttonColor: Colors.yellow,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "Q",
+                          buttonColor: Colors.yellow,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "R",
+                          buttonColor: Colors.yellow,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "W",
+                          buttonColor: Colors.yellow,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "L",
+                          buttonColor: Colors.grey,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "S",
+                          buttonColor: Colors.grey,
+                          state: false),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SubwayButton(
+                          buttonText: "SF",
+                          buttonColor: Colors.grey,
+                          state: false),
+                      SubwayButton(
+                          buttonText: "SR",
+                          buttonColor: Colors.grey,
+                          state: false),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Describe the Incident",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15.0,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    child: SizedBox(
+                      height: 200,
+                      child: TextField(
+                        controller: _descriptionController,
+                        maxLines: null,
+                        expands: true,
+                        keyboardType: TextInputType.text,
+                        decoration: const InputDecoration(
+                          fillColor: Colors.white,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // subsmit to firestore
+                      
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 94, 78, 228),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(30),
+                        ),
+                      ),
+                    ),
+                    child: const Text("Submit"),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
