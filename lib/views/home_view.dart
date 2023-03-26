@@ -1,7 +1,7 @@
 // home page widgets
 import 'package:flutter/material.dart';
 import 'package:safe_line/routes.dart';
-import 'package:safe_line/views/tabs/all_tabs.dart';
+import 'package:safe_line/views/tabViews/all_tabs.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

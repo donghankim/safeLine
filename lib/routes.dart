@@ -1,6 +1,6 @@
 // place all routes here
 const loginRoute = "/login/";
-const registerRoute = "/register/";
+const signupRoute = "/signup";
 const homeRoute = "/home/";
 const emailVerifyRoute = "/emailVerify/";
 const settingsRoute = "/userSettings/";

@@ -40,36 +40,42 @@ Future<void> showErrorDialog(context) async {
 
 const invalidEmailBar = SnackBar(
   content: Text("Email not valid."),
-  backgroundColor: Colors.blue,
+  backgroundColor: Color.fromARGB(255, 94, 78, 228),
   duration: Duration(seconds: 1),
 );
 
 const emailInUseBar = SnackBar(
   content: Text("Email already regsitered."),
-  backgroundColor: Colors.blue,
+  backgroundColor: Color.fromARGB(255, 94, 78, 228),
   duration: Duration(seconds: 1),
 );
 
 const weakPasswordBar = SnackBar(
   content: Text("Password too weak..."),
-  backgroundColor: Colors.blue,
+  backgroundColor: Color.fromARGB(255, 94, 78, 228),
   duration: Duration(seconds: 1),
 );
 
 const email404Bar = SnackBar(
   content: Text("Email not registered..."),
-  backgroundColor: Colors.blue,
+  backgroundColor: Color.fromARGB(255, 94, 78, 228),
   duration: Duration(seconds: 1),
 );
 
 const incorrectPasswordBar = SnackBar(
   content: Text("Incorrect Password!"),
-  backgroundColor: Colors.blue,
+  backgroundColor: Color.fromARGB(255, 94, 78, 228),
   duration: Duration(seconds: 1),
 );
 
 const passwordDiffBar = SnackBar(
   content: Text("Oops, your password did not match"),
-  backgroundColor: Colors.blue,
+  backgroundColor: Color.fromARGB(255, 94, 78, 228),
+  duration: Duration(seconds: 1),
+);
+
+const generalErrorBar = SnackBar(
+  content: Text("Hmm...? Could not find your account."),
+  backgroundColor: Color.fromARGB(255, 94, 78, 228),
   duration: Duration(seconds: 1),
 );
