@@ -1,7 +1,11 @@
 // home page widgets
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:safe_line/routes.dart';
-import 'package:safe_line/views/tabViews/all_tabs.dart';
+import 'package:safe_line/tabViews/all_tabs.dart';
+import 'package:safe_line/customWidgets/title_widget.dart';
+import 'package:safe_line/customWidgets/profile_widget.dart';
+import 'package:safe_line/constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,57 +15,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Widget> allTabs = const [
-    TabWidget(iconPath: 'asset/icons/reports_icon.png'),
-    TabWidget(iconPath: 'asset/icons/news_icon.png'),
-    TabWidget(iconPath: 'asset/icons/subway_icon.png'),
-    TabWidget(iconPath: 'asset/icons/leader_icon.png'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: allTabs.length,
+      initialIndex: 2,
+      length: 4,
       child: Scaffold(
+        backgroundColor: slBgColor,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: false,
-          title: const Text(
-            "Safe Line",
-            style: TextStyle(color: Colors.black),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12.0),
-              child: IconButton(
-                icon: Icon(Icons.person, color: Colors.grey[800], size: 32),
-                onPressed: () async {
-                  Navigator.pushNamed(context, settingsRoute);
-                },
-              ),
-            ),
-          ],
+          toolbarHeight: 10,
+          backgroundColor: accentColor,
+          bottom: PreferredSize(
+              preferredSize: _allTabs.preferredSize, child: _allTabs),
         ),
-        body: SafeArea(
+        body: Center(
           child: Column(
-            children: <Widget>[
-              const SizedBox(
-                height: 32,
-              ),
-              TabBar(
-                tabs: allTabs,
-                isScrollable: true,
-              ),
+            children: [
               Expanded(
-                  child: TabBarView(
-                children: [
-                  ReportTabBar(),
-                  NewsTabBar(),
-                  MapTabBar(),
-                  LeaderTabBar(),
-                ],
-              ))
+                child: TabBarView(
+                  children: [
+                    MapTabBar(),
+                    NewsTabBar(),
+                    LeaderTabBar(),
+                    ProfileTabBar(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -76,22 +55,39 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+TabBar get _allTabs => const TabBar(
+      unselectedLabelColor: Colors.white,
+      indicatorColor: Colors.black,
+      labelPadding: EdgeInsets.zero,
+      tabs: [
+        Tab(
+            text: "Subway",
+            icon: Icon(Icons.directions_subway, color: slBgColor)),
+        Tab(text: "News", icon: Icon(Icons.feed, color: slBgColor)),
+        Tab(
+            text: "Leaderboard",
+            icon: Icon(Icons.leaderboard, color: slBgColor)),
+        Tab(text: "Profile", icon: Icon(Icons.person, color: slBgColor))
+      ],
+    );
+
+// not used
 class TabWidget extends StatelessWidget {
-  final String iconPath;
+  final String icon;
 
-  const TabWidget({super.key, required this.iconPath});
-
+  const TabWidget({super.key, required this.icon});
   @override
   Widget build(BuildContext context) {
     return Tab(
-      height: 64,
+      height: 70,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: const Color.fromARGB(255, 232, 232, 232),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Image.asset(iconPath),
+        child: Image.asset(icon),
+        // child: Icon(Icons.{$.icon}),
       ),
     );
   }

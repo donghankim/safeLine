@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safe_line/customWidgets/appTitle_widget.dart';
+import 'package:safe_line/customWidgets/title_widget.dart';
 import 'package:safe_line/customWidgets/form_widget.dart';
 
 class RegisterPage extends StatefulWidget {

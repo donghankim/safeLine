@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:safe_line/models/reports.dart';
+import 'package:safe_line/models/report.dart';
 
 class AppUser {
   final String id;
