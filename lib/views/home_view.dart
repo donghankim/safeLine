@@ -81,6 +81,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // reporting incidents
   Future<void> reportIncident(BuildContext context) async {
     final TextEditingController _descriptionController =
         TextEditingController();
@@ -309,7 +310,7 @@ class _HomePageState extends State<HomePage> {
                   child: ElevatedButton(
                     onPressed: () {
                       // subsmit to firestore
-                      
+
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
