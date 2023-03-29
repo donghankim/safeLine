@@ -1,64 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:safe_line/constants.dart';
-import 'dart:developer' as tools;
 
-class LeaderTabBar extends StatefulWidget {
-  const LeaderTabBar({super.key});
+class LeaderPage extends StatefulWidget {
+  const LeaderPage({super.key});
 
   @override
-  State<LeaderTabBar> createState() => _LeaderTabBarState();
+  State<LeaderPage> createState() => _LeaderPageState();
 }
 
-class _LeaderTabBarState extends State<LeaderTabBar> {
-  final CollectionReference userCollection =
-      FirebaseFirestore.instance.collection('users');
-
-  List<int> orderedScores = [];
-  List<String> allUsers = [];
-
-  Stream<QuerySnapshot> get users {
-    return userCollection.snapshots();
-  }
-
-  Future updateUserScores() async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .orderBy('Score', descending: true)
-        .get()
-        .then(
-          (snapshot) => snapshot.docs.forEach(
-            (element) {
-              var docData = element.data();
-              orderedScores.add(docData['Score']);
-              allUsers.add(docData['DisplayName']);
-            },
-          ),
-        );
-  }
-
+class _LeaderPageState extends State<LeaderPage> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: updateUserScores(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 30),
-              podiumWidget(context),
-              scoreViewWidget(context),
-            ],
-          );
-        } else {
-          return circularLoader;
-        }
-      },
+    return Scaffold(
+      backgroundColor: bgColor,
+      appBar: deviceAppBar(context),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .orderBy('Score', descending: true)
+            .snapshots(),
+        builder: (BuildContext content, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) {
+            return circularLoader;
+          } else {
+            List<String> allUsers = [];
+            List<int> orderedScores = [];
+            for (var data_ in snapshot.data!.docs) {
+              allUsers.add(data_['DisplayName']);
+              orderedScores.add(data_['Score']);
+            }
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 10),
+                podiumWidget(context, allUsers.take(3).toList()),
+                scoreViewWidget(context, allUsers, orderedScores),
+              ],
+            );
+          }
+        },
+      ),
     );
   }
 
-  Widget scoreViewWidget(BuildContext context) {
+  Widget scoreViewWidget(
+      BuildContext context, List<String> allUsers, List<int> orderedScores) {
     return Expanded(
       flex: 2,
       child: Align(
@@ -156,7 +143,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
   }
 
   // Podium view
-  Widget podiumWidget(BuildContext context) {
+  Widget podiumWidget(BuildContext context, List<String> topUsers) {
     return SizedBox(
       width: 300,
       child: Row(
@@ -165,7 +152,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
         children: [
           Column(
             children: [
-              _podiumProfile(context, 2),
+              _podiumProfile(context, topUsers[1], 2),
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                 child: _podiumBars(context, 2),
@@ -174,7 +161,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
           ),
           Column(
             children: [
-              _podiumProfile(context, 1),
+              _podiumProfile(context, topUsers[0], 1),
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                 child: _podiumBars(context, 1),
@@ -183,7 +170,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
           ),
           Column(
             children: [
-              _podiumProfile(context, 3),
+              _podiumProfile(context, topUsers[2], 3),
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                 child: _podiumBars(context, 3),
@@ -195,9 +182,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
     );
   }
 
-  Widget _podiumProfile(BuildContext context, int place) {
-    String userName = allUsers[place - 1];
-
+  Widget _podiumProfile(BuildContext context, String userName, int place) {
     return Column(
       children: [
         // const Icon(Icons.person, color: accentColor),

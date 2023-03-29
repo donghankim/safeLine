@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:safe_line/figmaHelpers/transform/transform.dart';
-import 'package:safe_line/figmaHelpers/svg/svg.dart';
+import 'package:safe_line/customWidgets/figmaWidgets/figmaHelpers/transform/transform.dart';
+import 'package:safe_line/customWidgets/figmaWidgets/figmaHelpers/svg/svg.dart';
 import 'package:safe_line/constants.dart';
 
 class SafeLineWidget extends StatelessWidget {

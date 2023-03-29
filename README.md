@@ -11,7 +11,13 @@ touch .env
 # inside .env
 GMAP_API_KEY=YOUR_API_KEY
 ```
-Please refer to this YouTube video for more details on how to set up your .env file: [video tutorial](https://www.youtube.com/watch?v=LnZyorDeLmQ)
+Please refer to this YouTube video for more details on how to set up your .env file: [video tutorial](https://www.youtube.com/watch?v=LnZyorDeLmQ) //
+Might need to run the following commands for app icons initialization: [video tutorial](https://www.youtube.com/watch?v=eMHbgIgJyUQ)
+```bash
+cd safeLine/
+flutter pub get
+flutter pub run flutter_launcher_icons:main
+```
 
 ## Project Structure
 ```bash
@@ -39,18 +45,6 @@ Please refer to this YouTube video for more details on how to set up your .env f
 ├── web
 └── windows
 ```
-The only folder you should be looking at is the <strong>lib/</strong> folder. All development code is organized inside lib. Within lib, there are three additional folders following the MVVC software design pattern. Moreover, please follow the following Flutter coding conventions:
-* class names are <strong>UpperCamelCase</strong>
-* file names are <strong>snake_case</strong>
-* tabs are set to 2 spaces
 
-It might be better to use VSCode with the flutter extension enabled (easier to code in my opinion). The base.dart file contains the starter code provided by flutter if you need help. All front-end related code should go inside the views folder and business logic (backend)
-code should go inside the viewModels folder (although currently empty). Don't worry too much about following convention, Ill try to edit your code when merging.
-
-## TODO (for Sunday 19th):
-* Alex: Subway maps + train tracking in real-time (UI included)
-* Nathan: Leaderboard + UI 
-* Donghan: Work on Incident reporting feature and merge any back-end code from Alex and Nathan
-* Ellie: Basic UI design of the application, focusing more on a clean and user-friendly UI/UX (please keep the annimations to a low~)
-* A-star search + Dijkstra's algorithm to find the best path avoiding stations with a lot of incidents (over-ambitious but doable)
-
+## Potentials
+* https://pub.dev/packages/google_static_maps_controller

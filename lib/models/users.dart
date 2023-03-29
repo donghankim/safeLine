@@ -1,12 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:safe_line/models/report.dart';
 
 class AppUser {
   final String id;
   final String? email;
   final bool isVerified;
   String? displayName;
-  // List<Report> userPosts = [];
   int score = 0;
 
   AppUser(
@@ -22,12 +20,4 @@ class AppUser {
         user.displayName,
         user.emailVerified,
       );
-
-  void incrementScore() {
-    score++;
-  }
-
-  int getScore() {
-    return score;
-  }
 }

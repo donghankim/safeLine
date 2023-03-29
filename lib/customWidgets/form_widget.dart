@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:safe_line/routes.dart';
-import 'package:safe_line/views/home_view.dart';
+import 'package:safe_line/views/map_view.dart';
 import 'package:safe_line/auth/auth_service.dart';
 import 'package:safe_line/auth/auth_exceptions.dart';
 
@@ -412,7 +412,7 @@ class _FormWidgetState extends State<FormWidget> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomePage(currUser: user!),
+                      builder: (context) => MapPage(),
                     ),
                     (route) => false);
                 }
