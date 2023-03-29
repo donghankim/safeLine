@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:safe_line/auth/all_auth.dart';
 import 'package:safe_line/models/users.dart';
+import 'package:safe_line/routes.dart';
+import 'package:safe_line/views/landing_view.dart';
 
 class FirebaseProvider implements AuthProvider {
   @override
@@ -94,12 +97,14 @@ class FirebaseProvider implements AuthProvider {
   }
 
   @override
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       await FirebaseAuth.instance.signOut();
-    } else {
-      throw GenericAuthException();
+    }
+    if (context.mounted) {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(landingRoute, (route) => false);
     }
   }
 

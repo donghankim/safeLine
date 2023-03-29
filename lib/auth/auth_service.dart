@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:safe_line/auth/auth_provider.dart';
 import 'package:safe_line/auth/firebase_provider.dart';
 import 'package:safe_line/models/users.dart';
@@ -33,7 +34,7 @@ class AuthService implements AuthProvider {
       );
 
   @override
-  Future<void> logout() => provider.logout();
+  Future<void> logout(BuildContext context) => provider.logout(context);
 
   @override
   Future<void> sendVerification() => provider.sendVerification();

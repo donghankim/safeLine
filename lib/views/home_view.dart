@@ -1,23 +1,33 @@
 // home page widgets
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:safe_line/constants.dart';
 import 'package:safe_line/models/users.dart';
+import 'package:safe_line/models/report.dart';
 import 'package:safe_line/tabViews/all_tabs.dart';
 import 'package:safe_line/customWidgets/toggle_button.dart';
 
 TabBar get _allTabs => const TabBar(
-      unselectedLabelColor: Colors.white,
-      indicatorColor: Colors.black,
+      unselectedLabelColor: Color.fromARGB(255, 197, 196, 196),
+      indicatorColor: Colors.white,
       labelPadding: EdgeInsets.zero,
       tabs: [
         Tab(
-            text: "Subway",
-            icon: Icon(Icons.directions_subway, color: slBgColor)),
-        Tab(text: "News", icon: Icon(Icons.feed, color: slBgColor)),
+          text: "Subway",
+          icon: Icon(Icons.directions_subway),
+        ),
         Tab(
-            text: "Leaderboard",
-            icon: Icon(Icons.leaderboard, color: slBgColor)),
-        Tab(text: "Profile", icon: Icon(Icons.person, color: slBgColor))
+          text: "Feed",
+          icon: Icon(Icons.feed),
+        ),
+        Tab(
+          text: "Leaderboard",
+          icon: Icon(Icons.leaderboard),
+        ),
+        Tab(
+          text: "Profile",
+          icon: Icon(Icons.person),
+        ),
       ],
     );
 
@@ -38,9 +48,9 @@ class _HomePageState extends State<HomePage> {
       initialIndex: 0,
       length: 4,
       child: Scaffold(
-        backgroundColor: slBgColor,
+        backgroundColor: bgColor,
         appBar: AppBar(
-          toolbarHeight: 5,
+          toolbarHeight: 0,
           backgroundColor: accentColor,
           bottom: PreferredSize(
               preferredSize: _allTabs.preferredSize, child: _allTabs),
@@ -62,7 +72,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         floatingActionButton: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 25, 15),
+          padding: const EdgeInsets.fromLTRB(0, 120, 10, 0),
           child: SizedBox(
             width: 70,
             height: 70,
@@ -77,6 +87,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       ),
     );
   }
@@ -92,7 +103,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context) {
         return Container(
           child: AlertDialog(
-            backgroundColor: slBgColor,
+            backgroundColor: bgColor,
             content: Form(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -308,10 +319,29 @@ class _HomePageState extends State<HomePage> {
                 child: Align(
                   alignment: Alignment.center,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // subsmit to firestore
-
-                      Navigator.of(context).pop();
+                    onPressed: () async {
+                      Report newIncident = Report(widget.currUser.id, "train1",
+                          _descriptionController.text);
+                      await FirebaseFirestore.instance
+                          .collection('reports')
+                          .add(
+                        {
+                          'userId': newIncident.userId,
+                          'trainId': newIncident.trainId,
+                          'postTime': newIncident.postTime,
+                          'description': newIncident.description,
+                          'validity': newIncident.validityScore,
+                        },
+                      );
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content: Text("Report Saved!"),
+                          backgroundColor: accentColor,
+                          duration: Duration(seconds: 1),
+                        ));
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 94, 78, 228),

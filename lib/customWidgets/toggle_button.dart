@@ -6,10 +6,10 @@ class SubwayButton extends StatefulWidget {
   final String buttonText;
   final Color buttonColor;
   final Border selected = Border.all(color: accentColor, width: 3);
-  final Border unselected = Border.all(color: slBgColor, width: 3);
+  final Border unselected = Border.all(color: bgColor, width: 3);
 
   bool state;
-  Border currentBorder = Border.all(color: slBgColor, width: 3);
+  Border currentBorder = Border.all(color: bgColor, width: 3);
 
   SubwayButton({
     super.key,

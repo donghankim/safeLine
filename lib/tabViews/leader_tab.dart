@@ -11,8 +11,15 @@ class LeaderTabBar extends StatefulWidget {
 }
 
 class _LeaderTabBarState extends State<LeaderTabBar> {
+  final CollectionReference userCollection =
+      FirebaseFirestore.instance.collection('users');
+
   List<int> orderedScores = [];
   List<String> allUsers = [];
+
+  Stream<QuerySnapshot> get users {
+    return userCollection.snapshots();
+  }
 
   Future updateUserScores() async {
     await FirebaseFirestore.instance
@@ -20,14 +27,14 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
         .orderBy('Score', descending: true)
         .get()
         .then(
-      (snapshot) {
-        for (var doc in snapshot.docs) {
-          var userData = doc.data();
-          orderedScores.add(userData['Score']);
-          allUsers.add(userData['DisplayName']);
-        }
-      },
-    );
+          (snapshot) => snapshot.docs.forEach(
+            (element) {
+              var docData = element.data();
+              orderedScores.add(docData['Score']);
+              allUsers.add(docData['DisplayName']);
+            },
+          ),
+        );
   }
 
   @override
@@ -35,19 +42,22 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
     return FutureBuilder(
       future: updateUserScores(),
       builder: (context, snapshot) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 30),
-            podiumWidget(context),
-            scoreViewWidget(context),
-          ],
-        );
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 30),
+              podiumWidget(context),
+              scoreViewWidget(context),
+            ],
+          );
+        } else {
+          return circularLoader;
+        }
       },
     );
   }
 
-  // listView
   Widget scoreViewWidget(BuildContext context) {
     return Expanded(
       flex: 2,
@@ -82,7 +92,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
     double cardHeight = 75;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -105,7 +115,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: slBgColor,
+                    color: bgColor,
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
@@ -145,7 +155,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
     );
   }
 
-  // Podium (bars) view
+  // Podium view
   Widget podiumWidget(BuildContext context) {
     return SizedBox(
       width: 300,
@@ -193,7 +203,7 @@ class _LeaderTabBarState extends State<LeaderTabBar> {
         // const Icon(Icons.person, color: accentColor),
         MaterialButton(
           onPressed: () {},
-          color: slBgColor,
+          color: bgColor,
           textColor: accentColor,
           padding: const EdgeInsets.all(15),
           shape: const CircleBorder(),

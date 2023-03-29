@@ -40,6 +40,9 @@ dependencies:
   google_fonts: ^4.0.3
   cloud_firestore: ^4.4.5
   path_drawing: ^1.0.1
+  provider: ^6.0.5
+  google_maps_flutter: ^2.2.5
+  flutter_config: ^2.0.0
 
 dev_dependencies:
   flutter_test:

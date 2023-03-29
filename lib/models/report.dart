@@ -1,12 +1,13 @@
 // add enum for uptown/downtown
 
 class Report {
-  final String uid;
+  final String userId;
+  final String trainId;
   late DateTime postTime;
   String? description;
-  int votes = 0;
+  int validityScore = 0;
 
-  Report(this.uid, this.description) {
+  Report(this.userId, this.trainId, this.description) {
     postTime = DateTime.now();
   }
 }

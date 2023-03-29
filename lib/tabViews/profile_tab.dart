@@ -13,7 +13,7 @@ class _ProfileTabBarState extends State<ProfileTabBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: slBgColor,
+      color: bgColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -89,11 +89,13 @@ Widget profileSettingWidget(BuildContext context) {
         ),
         TextButton(
           onPressed: () async {
-            await AuthService.firebase().logout();
+            await AuthService.firebase().logout(context);
+            /*
             if (context.mounted) {
               Navigator.of(context)
                   .pushNamedAndRemoveUntil('/login/', (route) => false);
             }
+            */
           },
           child: const Text(
             "Log Out",
@@ -213,23 +215,3 @@ Widget profileOverviewWidget(BuildContext context) {
     ],
   );
 }
-
-
-
-
-
-
-
-
-/*
-ElevatedButton(
-      onPressed: () async {
-        await AuthService.firebase().logout();
-        if (context.mounted) {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/login/', (route) => false);
-        }
-      },
-      child: const Text("Logout"),
-    );
-*/

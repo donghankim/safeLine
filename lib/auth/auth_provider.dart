@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:safe_line/models/users.dart';
 
 abstract class AuthProvider {
@@ -15,6 +16,6 @@ abstract class AuthProvider {
     required String name,
   });
 
-  Future<void> logout();
+  Future<void> logout(BuildContext context);
   Future<void> sendVerification();
 }

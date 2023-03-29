@@ -2,14 +2,16 @@
 Google Solutions Challenge 2023, Columbia Univeristy. <br>
 SafeLine is a mobile application targetting <strong>UN Goal 11: Sustainable Cities and Communities</strong>
 
-## Installation
-You need to have firebase-cli, firebase-auth, and firebase-tools installed in order to build this application. Not sure if this works but try it out first:
+## Local Installation
+This application uses the Google Maps API. You must create your own Google Maps API Key, and pass it into a **.env** file.
 ```bash
-# install all flutter dependencies
 cd safeLine/
-flutter pub get
+touch .env
+
+# inside .env
+GMAP_API_KEY=YOUR_API_KEY
 ```
-If that doesnt work, refer to the official [firebase website](https://firebase.google.com/docs/cli#macos) for installation information.
+Please refer to this YouTube video for more details on how to set up your .env file: [video tutorial](https://www.youtube.com/watch?v=LnZyorDeLmQ)
 
 ## Project Structure
 ```bash
