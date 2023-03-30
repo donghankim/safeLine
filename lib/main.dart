@@ -14,7 +14,6 @@ What I need to do:
 - provider to read the updated train info
 - animate trains as they move.
 
-- refactor code
 - fix screen size crap
 */
 
