@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:safe_line/models/report.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -15,12 +16,17 @@ class Train {
   Train(this.id, this.line, this.direction, this.headsign, this.nextSt,
       this.status, this.delayed);
 
+
+  /*
   Marker getMarker(LatLng pos, BitmapDescriptor icon, double iconRot) {
     return Marker(
         markerId: MarkerId(id),
         position: pos,
-        onTap: () {},
+        onTap: () {
+
+        },
         icon: icon,
         rotation: iconRot);
   }
+  */
 }

@@ -23,7 +23,6 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final currUser = AuthService.firebase().currentUser;
   final db = FirebaseDatabase.instance.ref();
-  final String _apiKey = FlutterConfig.get('GMAP_API_KEY');
 
   // gmaps
   late String _gmapStyle;
@@ -109,7 +108,7 @@ class _MapPageState extends State<MapPage> {
 
           if (allTrains.containsKey(tId)) {
             allTrains[tId]!.nextSt = tData['next_st'];
-                allTrains[tId]!.status = tData['status'];
+            allTrains[tId]!.status = tData['status'];
             allTrains[tId]!.delayed = tData['isDelay'];
           } else {
             Train newTrain = Train(
@@ -125,26 +124,37 @@ class _MapPageState extends State<MapPage> {
             allTrains[tId] = newTrain;
             selectedTrain = newTrain;
           }
-          currMarkers = <Marker>{};
-          for (var currTrain in allTrains.values) {
-            var icon = trainIcon;
-            double rotVal = 0;
-            if (currTrain.incidentReports.isNotEmpty) {
-              icon = incidentIcon;
-            } else if (currTrain.delayed) {
-              icon = delayIcon;
-            } else if (currTrain.direction == "S") {
-              rotVal = 180;
-            }
-            if (allStations.containsKey(currTrain.nextSt)) {
-              LatLng currPos = allStations[currTrain.nextSt]!.pos;
-              currMarkers.add(currTrain.getMarker(currPos, icon, rotVal));
-            }
-          }
         }
-        setState(() {
-          currMarkers;
-        });
+        setState(
+          () {
+            currMarkers = <Marker>{};
+            for (var currTrain in allTrains.values) {
+              var icon = trainIcon;
+              double rotVal = 0;
+              if (currTrain.incidentReports.isNotEmpty) {
+                icon = incidentIcon;
+              } else if (currTrain.delayed) {
+                icon = delayIcon;
+              } else if (currTrain.direction == "S") {
+                rotVal = 180;
+              }
+              if (allStations.containsKey(currTrain.nextSt) &&
+                  currTrain.status == "STOPPED_AT") {
+                LatLng currPos = allStations[currTrain.nextSt]!.pos;
+                Marker newMarker = Marker(
+                    markerId: MarkerId(currTrain.id),
+                    position: currPos,
+                    onTap: () {
+                      reportModelView(context, currTrain,
+                          allStations[currTrain.nextSt]!.name);
+                    },
+                    icon: icon,
+                    rotation: rotVal);
+                currMarkers.add(newMarker);
+              }
+            }
+          },
+        );
       },
     );
   }
@@ -175,7 +185,7 @@ class _MapPageState extends State<MapPage> {
                 children: [
                   FloatingActionButton(
                     onPressed: () {
-                      reportModelView(context, selectedTrain);
+                      // reportModelView(context, selectedTrain);
                     },
                     heroTag: "report-btn",
                     backgroundColor: accentColor,

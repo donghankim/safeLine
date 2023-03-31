@@ -2,7 +2,7 @@ from nyct_gtfs import NYCTFeed
 import pyrebase
 import concurrent.futures
 from dotenv import load_dotenv
-import os, re
+import os, re, time
 import pdb
 
 
@@ -17,7 +17,7 @@ all_feeds = {
         "L": NYCTFeed("L", api_key = MTA_KEY),
         "1234567S": NYCTFeed("1", api_key = MTA_KEY),
         "SIR": NYCTFeed("SIR", api_key = MTA_KEY)
-    }
+}
 stream_lines = ["A", "C", "E", 
                 "B", "D", "F",
                 "M", "G", "J",
@@ -94,7 +94,7 @@ class DataStreamer:
         cls.db.remove()
 
     @classmethod
-    def publish(cls, cnt = None, method_ = "thread"):
+    def publish(cls, cnt = None, method_ = "async"):
         if cnt:
             for n in range(cnt):
                 if method_ == "async":
@@ -125,6 +125,7 @@ def main():
 
     while True:
         DataStreamer.publish()
+        time.sleep(1)
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:safe_line/models/train.dart';
 import 'package:safe_line/models/report.dart';
 
-void reportModelView(context, Train selTrain) {
+void reportModelView(context, Train selTrain, String stationName) {
   int idx = subwayLines.indexOf(selTrain.line);
   MaterialColor subbgColor = subwayIconColor[idx];
   String dir = "Uptown";
@@ -39,13 +39,13 @@ void reportModelView(context, Train selTrain) {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Columbia University",
+                    Text(
+                      "Next Station: $stationName",
                       textAlign: TextAlign.start,
-                      style: TextStyle(
-                        fontSize: 25.0,
+                      style: const TextStyle(
+                        fontSize: 20.0,
                         fontFamily: 'Inter',
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: Colors.black,
                       ),
                     ),
@@ -60,7 +60,7 @@ void reportModelView(context, Train selTrain) {
                       ),
                     ),
                     Text(
-                      "ID: ${selTrain.id}",
+                      "Train ID: ${selTrain.id}",
                       textAlign: TextAlign.start,
                       style: const TextStyle(
                         fontSize: 15.0,
@@ -72,7 +72,6 @@ void reportModelView(context, Train selTrain) {
                   ],
                 ),
                 Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     subwayLineIcon(selTrain.line, subbgColor),
                     Text(
@@ -92,7 +91,6 @@ void reportModelView(context, Train selTrain) {
 
             // textbox
             const SizedBox(height: 25),
-            
             const Align(
               alignment: Alignment.center,
               child: Text(
@@ -107,9 +105,9 @@ void reportModelView(context, Train selTrain) {
               ),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: SizedBox(
-                height: 175,
+                height: 150,
                 child: TextField(
                   controller: descriptionController,
                   maxLines: null,
@@ -129,40 +127,37 @@ void reportModelView(context, Train selTrain) {
             ),
 
             // submit button
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    Report newReport =
-                        Report("selTrain.id", descriptionController.text);
-                    await newReport.addReport();
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                Report newReport =
+                    Report(selTrain.id, descriptionController.text);
+                await newReport.addReport();
+                selTrain.incidentReports.add(newReport);
 
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Report Saved!"),
-                          backgroundColor: accentColor,
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(100, 30),
-                    backgroundColor: const Color.fromARGB(255, 94, 78, 228),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(30),
-                      ),
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Report Saved!"),
+                      backgroundColor: accentColor,
+                      duration: Duration(seconds: 1),
                     ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(100, 30),
+                backgroundColor: const Color.fromARGB(255, 94, 78, 228),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(30),
                   ),
-                  child: const Text("Submit"),
                 ),
               ),
+              child: const Text("Submit Report"),
             ),
           ],
         ),
@@ -175,8 +170,8 @@ Widget subwayLineIcon(String line, MaterialColor bgColor) {
   return Padding(
     padding: const EdgeInsets.all(10),
     child: SizedBox(
-      width: 60,
-      height: 60,
+      width: 50,
+      height: 50,
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(shape: BoxShape.circle, color: bgColor),
@@ -185,7 +180,7 @@ Widget subwayLineIcon(String line, MaterialColor bgColor) {
           // overflow: TextOverflow.visible,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 35.0,
+            fontSize: 30.0,
             fontFamily: 'Inter',
             fontWeight: FontWeight.w700,
             color: Colors.black,

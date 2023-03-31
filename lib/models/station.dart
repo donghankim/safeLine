@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:safe_line/constants.dart';
 
@@ -15,11 +16,14 @@ class Station {
       required this.lines});
 
   Circle getCircle() {
+    int idx = subwayLines.indexOf(lines[0]);
+    Color? c = subwayIconColor[idx][500];
+
     return Circle(
       circleId: CircleId(pos.toString()),
       center: pos,
-      radius: 25,
-      fillColor: accentColor,
+      radius: 20,
+      fillColor: c ?? accentColor,
     );
   }
 }
