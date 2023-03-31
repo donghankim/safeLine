@@ -44,10 +44,10 @@ dependencies:
   google_maps_flutter: ^2.2.5
   flutter_config: ^2.0.0
   flutter_launcher_icons: ^0.12.0
-  flutter_animarker: ^3.2.0
   modal_bottom_sheet: ^3.0.0-pre
   csv: ^5.0.1
   flutter_polyline_points: ^1.0.0
+  flutter_animarker: ^3.2.0
 
 
 
@@ -82,10 +82,12 @@ flutter:
     - asset/images/email_verification.png
     - asset/icons/profile.png
     - asset/icons/pop.png
+    - asset/icons/train_up.png
+    - asset/icons/train_alert.png
+    - asset/icons/train_delay.png
     - asset/badges/verified.png
     - asset/badges/karma_points.png
-    - asset/images/train_up.png
-    - asset/images/train_alert.png
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

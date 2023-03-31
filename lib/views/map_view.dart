@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:safe_line/constants.dart';
 import 'package:safe_line/customWidgets/report_widget.dart';
 import 'package:safe_line/auth/auth_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_animarker/flutter_map_marker_animation.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:safe_line/routes.dart';
@@ -12,6 +11,7 @@ import 'package:csv/csv.dart';
 import 'package:safe_line/models/station.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:safe_line/models/train.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'dart:developer' as tools;
 
 class MapPage extends StatefulWidget {
@@ -24,10 +24,13 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final currUser = AuthService.firebase().currentUser;
   final db = FirebaseDatabase.instance.ref();
+  final String _apiKey = FlutterConfig.get('GMAP_API_KEY');
 
   // gmaps
   late String _gmapStyle;
   late BitmapDescriptor trainIcon;
+  late BitmapDescriptor delayIcon;
+  late BitmapDescriptor incidentIcon;
   late GoogleMapController mapController;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
@@ -38,12 +41,13 @@ class _MapPageState extends State<MapPage> {
 
   // data
   Map<String, Train> allTrains = <String, Train>{};
+  Set<Marker> currMarkers = <Marker>{};
   final Map<String, Station> allStations = <String, Station>{};
   final Set<Polyline> subwayLines = <Polyline>{};
   final Set<Circle> stationMarkers = <Circle>{};
 
   // Real-time Firebase
-  late StreamSubscription _testStream;
+  late StreamSubscription _mtaStream;
 
   @override
   void initState() {
@@ -53,28 +57,73 @@ class _MapPageState extends State<MapPage> {
         _gmapStyle = string;
       },
     );
-    _testListener();
+    _streamListener();
   }
 
   @override
   void deactivate() {
-    _testStream.cancel();
+    _mtaStream.cancel();
     super.deactivate();
   }
 
-  void _testListener() {
-    _testStream = db.child('mta_stream').onValue.listen(
+  void _streamListener() {
+    _mtaStream = db.child('mta_stream').onValue.listen(
       (element) {
         var data = Map<String, dynamic>.from(
             element.snapshot.value as Map<dynamic, dynamic>);
-        tools.log(data.toString());
+
+        for (var item in data.entries) {
+          String tId = item.key;
+          var tData = item.value;
+
+          if (allTrains.containsKey(tId)) {
+            allTrains[tId]!.nextSt = tData['next_st'];
+            allTrains[tId]!.status = tData['status'];
+            allTrains[tId]!.delayed = tData['isDelay'];
+          } else {
+            Train newTrain = Train(
+              tId,
+              tData['direction'],
+              tData['line'],
+              tData['headsign'],
+              tData['next_st'],
+              tData['status'],
+              tData['isDelay'],
+            );
+
+            allTrains[tId] = newTrain;
+          }
+          currMarkers = <Marker>{};
+          for (var currTrain in allTrains.values) {
+            var icon = trainIcon;
+            double rotVal = 0;
+            if (currTrain.incidentReports.isNotEmpty) {
+              icon = incidentIcon;
+            } else if (currTrain.delayed) {
+              icon = delayIcon;
+            } else if (currTrain.direction == "S") {
+              rotVal = 180;
+            }
+            if (allStations.containsKey(currTrain.nextSt)) {
+              LatLng currPos = allStations[currTrain.nextSt]!.pos;
+              currMarkers.add(currTrain.getMarker(currPos, icon, rotVal));
+            }
+          }
+        }
+        setState(() {
+          currMarkers;
+        });
       },
     );
   }
 
   Future<void> loadStations() async {
     trainIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(15, 15)), 'asset/images/train_up.png');
+        ImageConfiguration(size: Size(15, 15)), 'asset/icons/train_up.png');
+    delayIcon = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(15, 15)), 'asset/icons/train_delay.png');
+    incidentIcon = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(15, 15)), 'asset/icons/train_alert.png');
 
     var string =
         await rootBundle.loadString('asset/processed/stations_processed.csv');
@@ -88,6 +137,7 @@ class _MapPageState extends State<MapPage> {
             name: data[1],
             pos: LatLng(data[2], data[3]),
             lines: data[4].toString().split(' '));
+
         // allStations.add(newStation);
         allStations[stationId] = newStation;
 
@@ -102,17 +152,6 @@ class _MapPageState extends State<MapPage> {
     return FutureBuilder(
       future: loadStations(),
       builder: (context, _) {
-        allTrains["12asdasd3"] =
-            Train("12asdasd3", "1", "down", "something", "somethwere", "good");
-        var currMarkers = allTrains.values
-            .map(
-              (train) {
-                return train.getMarker(
-                    const LatLng(40.807722, -73.96411), trainIcon);
-              },
-            )
-            .toList()
-            .toSet();
         return Scaffold(
           body: GoogleMap(
             initialCameraPosition: _manhattan,

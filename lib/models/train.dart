@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:safe_line/models/report.dart';
+import 'package:safe_line/customWidgets/report_widget.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Train {
@@ -6,27 +9,23 @@ class Train {
   final String line;
   final String direction;
   final String headsign;
-  final String nextSt;
+  String nextSt;
   String status = "PRE";
+  bool delayed = false;
   List<Report> incidentReports = [];
 
   Train(this.id, this.line, this.direction, this.headsign, this.nextSt,
-      this.status);
+      this.status, this.delayed);
 
-  Marker getMarker(LatLng pos, BitmapDescriptor icon) {
-    double currRot;
-    if (direction == "N") {
-      currRot = 0;
-    } else {
-      currRot = 180;
-    }
+  Marker getMarker(LatLng pos, BitmapDescriptor icon, double iconRot) {
     return Marker(
         markerId: MarkerId(id),
         position: pos,
         onTap: () {
           // modal view
+          // reportModelView(context);
         },
         icon: icon,
-        rotation: currRot);
+        rotation: iconRot);
   }
 }

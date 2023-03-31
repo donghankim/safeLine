@@ -40,16 +40,19 @@ def gtfs_feed(feed_key):
             status = train.location_status # STOPPED_AT, IN_TRANSIT_TO, INCOMING_AT
             heading_st = train.location
             direction = train.direction
+            delay = train.has_delay_alert
+            if delay == None:
+                delay = False
+
             train_data = [line, train_id, headsign, heading_st, direction, status]
-
-
             if all(train_data):
                 data = {
                     "line": line,
                     "headsign": headsign,
                     "next_st": heading_st[:3],
                     "direction": direction,
-                    "status": status
+                    "status": status,
+                    "isDelay": delay
                 }
                 DataStreamer.stream[train_id] = data
 
@@ -91,30 +94,43 @@ class DataStreamer:
         cls.db.remove()
 
     @classmethod
-    def publish(cls, cnt, method_):
-        for n in range(cnt):
-            if method_ == "async":
-                async_update()
-            elif method_ == "thread":
-                threaded_update()
-            elif method_ == "multiprocess":
-                pass
-            
+    def publish(cls, cnt = None, method_ = "thread"):
+        if cnt:
+            for n in range(cnt):
+                if method_ == "async":
+                    async_update()
+                elif method_ == "thread":
+                    threaded_update()
+                elif method_ == "multiprocess":
+                    pass
+                
+                try:
+                    cls.db.update(cls.stream)
+                    print(len(cls.stream))
+                except Exception:
+                    print(f"{n} failed")
+        else:
+            # cloud run
+            threaded_update()
             try:
-                cls.db.update(cls.stream)
-                print(len(cls.stream))
+                cls.db.set(cls.stream)
+                print(f"number of updated: {len(cls.stream)}")
             except Exception:
-                print(f"{n} failed")
+                print("failed to push...")
+
 
 
 def main():
     DataStreamer.db_connect()
-    DataStreamer.db_reset()
-    DataStreamer.publish(10, method_ = "thread")
-    
+
+    while True:
+        DataStreamer.publish()
+
 
 if __name__ == '__main__':
     main()
     # gtfs_feed("ACEHFS")
+    print("script terminated....")
+
 
 
