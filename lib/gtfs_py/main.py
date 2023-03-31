@@ -1,9 +1,8 @@
 from nyct_gtfs import NYCTFeed
 import pyrebase
 import concurrent.futures
-from collections import defaultdict
 from dotenv import load_dotenv
-import os, time
+import os, re
 import pdb
 
 
@@ -36,20 +35,23 @@ def gtfs_feed(feed_key):
     for train in trains:
         line = train.route_id
         if line in stream_lines:
-            train_id = train.nyc_train_id.replace(" ", "").replace("/", "_")
+            train_id = re.sub(r'[^\w\s]','', train.nyc_train_id).replace(" ", "")
+            headsign = train.headsign_text
             status = train.location_status # STOPPED_AT, IN_TRANSIT_TO, INCOMING_AT
             heading_st = train.location
             direction = train.direction
-            train_data = [line, train_id, heading_st, direction, status]
+            train_data = [line, train_id, headsign, heading_st, direction, status]
+
 
             if all(train_data):
                 data = {
-                    "id": train_id,
-                    "heading_st": heading_st,
+                    "line": line,
+                    "headsign": headsign,
+                    "next_st": heading_st[:3],
                     "direction": direction,
                     "status": status
                 }
-                DataStreamer.stream[line].append(data)
+                DataStreamer.stream[train_id] = data
 
 
 def async_update():
@@ -65,7 +67,7 @@ def threaded_update():
 
 
 class DataStreamer: 
-    stream = defaultdict(list)
+    stream = {}
     feeds = list(all_feeds.keys())
     config = {
         "apiKey": "AIzaSyBBOANJTRKfexijLU3ePB16bdG89P8hq-4",
@@ -80,12 +82,12 @@ class DataStreamer:
     db = None
     
     @classmethod 
-    def init_db(cls):
+    def db_connect(cls):
         firebase = pyrebase.initialize_app(cls.config)
         cls.db = firebase.database()
     
     @classmethod
-    def reset_db(cls):
+    def db_reset(cls):
         cls.db.remove()
 
     @classmethod
@@ -97,20 +99,22 @@ class DataStreamer:
                 threaded_update()
             elif method_ == "multiprocess":
                 pass
-        
-            for line, value in cls.stream.items():
-                line_data = {data['id']: data for data in value}
-                try:
-                    cls.db.child(line).update(line_data)
-                except Exception:
-                    print(f"{n}: failed {line}")
-
+            
+            try:
+                cls.db.update(cls.stream)
+                print(len(cls.stream))
+            except Exception:
+                print(f"{n} failed")
 
 
 def main():
-    DataStreamer.init_db()
+    DataStreamer.db_connect()
+    DataStreamer.db_reset()
     DataStreamer.publish(10, method_ = "thread")
     
 
 if __name__ == '__main__':
     main()
+    # gtfs_feed("ACEHFS")
+
+

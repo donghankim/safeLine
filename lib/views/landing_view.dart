@@ -24,7 +24,7 @@ class LandingPage extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border.all(
                           width: 1.0,
-                          color: Color.fromARGB(255, 0, 0, 0),
+                          color: const Color.fromARGB(255, 0, 0, 0),
                         ),
                       ),
                       child: Stack(
@@ -35,7 +35,7 @@ class LandingPage extends StatelessWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.zero,
                             child: Container(
-                              color: Color.fromARGB(255, 242, 241, 251),
+                              color: const Color.fromARGB(255, 242, 241, 251),
                             ),
                           ),
                           Positioned(
@@ -119,7 +119,7 @@ class LandingPage extends StatelessWidget {
                             height: 26.0,
                             child: GeneratedTaglinehereWidget(),
                           ),
-                          Positioned(
+                          const Positioned(
                             left: 128.0,
                             top: 546.0,
                             right: null,
