@@ -14,9 +14,9 @@ class Report with ChangeNotifier {
 
   Report._interal(this.userId, this.trainId, this._description);
 
-  factory Report() {
+  factory Report(String trainId, String description) {
     final currUser = AuthService.firebase().currentUser!;
-    return Report._interal(currUser.id, "temp", "");
+    return Report._interal(currUser.id, trainId, description);
   }
 
   DateTime get postTime => _postTime;

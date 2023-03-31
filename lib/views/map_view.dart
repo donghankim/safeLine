@@ -3,7 +3,6 @@ import 'package:safe_line/constants.dart';
 import 'package:safe_line/customWidgets/report_widget.dart';
 import 'package:safe_line/auth/auth_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:safe_line/routes.dart';
@@ -40,11 +39,13 @@ class _MapPageState extends State<MapPage> {
   );
 
   // data
-  Map<String, Train> allTrains = <String, Train>{};
-  Set<Marker> currMarkers = <Marker>{};
   final Map<String, Station> allStations = <String, Station>{};
   final Set<Polyline> subwayLines = <Polyline>{};
   final Set<Circle> stationMarkers = <Circle>{};
+
+  Map<String, Train> allTrains = <String, Train>{};
+  Set<Marker> currMarkers = <Marker>{};
+  late Train selectedTrain;
 
   // Real-time Firebase
   late StreamSubscription _mtaStream;
@@ -64,57 +65,6 @@ class _MapPageState extends State<MapPage> {
   void deactivate() {
     _mtaStream.cancel();
     super.deactivate();
-  }
-
-  void _streamListener() {
-    _mtaStream = db.child('mta_stream').onValue.listen(
-      (element) {
-        var data = Map<String, dynamic>.from(
-            element.snapshot.value as Map<dynamic, dynamic>);
-
-        for (var item in data.entries) {
-          String tId = item.key;
-          var tData = item.value;
-
-          if (allTrains.containsKey(tId)) {
-            allTrains[tId]!.nextSt = tData['next_st'];
-            allTrains[tId]!.status = tData['status'];
-            allTrains[tId]!.delayed = tData['isDelay'];
-          } else {
-            Train newTrain = Train(
-              tId,
-              tData['direction'],
-              tData['line'],
-              tData['headsign'],
-              tData['next_st'],
-              tData['status'],
-              tData['isDelay'],
-            );
-
-            allTrains[tId] = newTrain;
-          }
-          currMarkers = <Marker>{};
-          for (var currTrain in allTrains.values) {
-            var icon = trainIcon;
-            double rotVal = 0;
-            if (currTrain.incidentReports.isNotEmpty) {
-              icon = incidentIcon;
-            } else if (currTrain.delayed) {
-              icon = delayIcon;
-            } else if (currTrain.direction == "S") {
-              rotVal = 180;
-            }
-            if (allStations.containsKey(currTrain.nextSt)) {
-              LatLng currPos = allStations[currTrain.nextSt]!.pos;
-              currMarkers.add(currTrain.getMarker(currPos, icon, rotVal));
-            }
-          }
-        }
-        setState(() {
-          currMarkers;
-        });
-      },
-    );
   }
 
   Future<void> loadStations() async {
@@ -147,6 +97,58 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  void _streamListener() {
+    _mtaStream = db.child('mta_stream').onValue.listen(
+      (element) {
+        var data = Map<String, dynamic>.from(
+            element.snapshot.value as Map<dynamic, dynamic>);
+
+        for (var item in data.entries) {
+          String tId = item.key;
+          var tData = item.value;
+
+          if (allTrains.containsKey(tId)) {
+            allTrains[tId]!.nextSt = tData['next_st'];
+                allTrains[tId]!.status = tData['status'];
+            allTrains[tId]!.delayed = tData['isDelay'];
+          } else {
+            Train newTrain = Train(
+              tId,
+              tData['direction'],
+              tData['line'],
+              tData['headsign'],
+              tData['next_st'],
+              tData['status'],
+              tData['isDelay'],
+            );
+
+            allTrains[tId] = newTrain;
+            selectedTrain = newTrain;
+          }
+          currMarkers = <Marker>{};
+          for (var currTrain in allTrains.values) {
+            var icon = trainIcon;
+            double rotVal = 0;
+            if (currTrain.incidentReports.isNotEmpty) {
+              icon = incidentIcon;
+            } else if (currTrain.delayed) {
+              icon = delayIcon;
+            } else if (currTrain.direction == "S") {
+              rotVal = 180;
+            }
+            if (allStations.containsKey(currTrain.nextSt)) {
+              LatLng currPos = allStations[currTrain.nextSt]!.pos;
+              currMarkers.add(currTrain.getMarker(currPos, icon, rotVal));
+            }
+          }
+        }
+        setState(() {
+          currMarkers;
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -154,15 +156,15 @@ class _MapPageState extends State<MapPage> {
       builder: (context, _) {
         return Scaffold(
           body: GoogleMap(
-            initialCameraPosition: _manhattan,
-            myLocationButtonEnabled: false,
-            markers: currMarkers,
-            circles: stationMarkers,
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               mapController = controller;
               mapController.setMapStyle(_gmapStyle);
             },
+            initialCameraPosition: _manhattan,
+            myLocationButtonEnabled: false,
+            circles: stationMarkers,
+            markers: currMarkers,
           ),
           floatingActionButton: Padding(
             padding: const EdgeInsets.fromLTRB(0, 30, 15, 0),
@@ -173,7 +175,7 @@ class _MapPageState extends State<MapPage> {
                 children: [
                   FloatingActionButton(
                     onPressed: () {
-                      reportModelView(context);
+                      reportModelView(context, selectedTrain);
                     },
                     heroTag: "report-btn",
                     backgroundColor: accentColor,

@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:safe_line/models/report.dart';
-import 'package:safe_line/customWidgets/report_widget.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Train {
@@ -10,6 +7,7 @@ class Train {
   final String direction;
   final String headsign;
   String nextSt;
+  String nextStName = "";
   String status = "PRE";
   bool delayed = false;
   List<Report> incidentReports = [];
@@ -21,10 +19,7 @@ class Train {
     return Marker(
         markerId: MarkerId(id),
         position: pos,
-        onTap: () {
-          // modal view
-          // reportModelView(context);
-        },
+        onTap: () {},
         icon: icon,
         rotation: iconRot);
   }
