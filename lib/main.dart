@@ -6,16 +6,6 @@ import 'package:safe_line/views/all_views.dart';
 import 'package:safe_line/routes.dart';
 import 'package:safe_line/constants.dart';
 
-/*
-- I know how to draw subway lines and stations
-
-What I need to do:
-- stream train info using python to firebase (python code needs to be hosted on GCP dataflow?)
-- provider to read the updated train info
-- animate trains as they move.
-
-- fix screen size crap
-*/
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

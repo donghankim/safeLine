@@ -1,5 +1,4 @@
 import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:safe_line/constants.dart';
@@ -13,6 +12,7 @@ import 'package:safe_line/routes.dart';
 import 'package:csv/csv.dart';
 import 'package:safe_line/models/station.dart';
 import 'dart:convert';
+import 'package:firebase_database/firebase_database.dart';
 import 'dart:developer' as tools;
 
 class MapPage extends StatefulWidget {
@@ -24,6 +24,7 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final currUser = AuthService.firebase().currentUser;
+  final db = FirebaseDatabase.instance.ref();
 
   // gmaps
   late String _gmapStyle;
@@ -36,10 +37,13 @@ class _MapPageState extends State<MapPage> {
   );
 
   // maps animation
-  late List<Station> stationArr;
-  late Map<String, dynamic> lineMap;
-  late Set<Circle> _stationCircles = {};
-  late Set<Polyline> _trainLines;
+  List<Station> stationArr = [];
+  Map<String, dynamic> lineMap = {};
+  Set<Circle> _stationCircles = Set<Circle>();
+  Set<Polyline> _trainLines = Set<Polyline>();
+
+  // Real-time Firebase
+  late StreamSubscription _testStream;
 
   @override
   void initState() {
@@ -49,13 +53,51 @@ class _MapPageState extends State<MapPage> {
         _gmapStyle = string;
       },
     );
+    rootBundle.loadString('asset/processed/stations_processed.csv').then(
+      (string) {
+        var dataList = const CsvToListConverter().convert(string, eol: "\n");
+        for (var data in dataList) {
+          if (data[0] != "id") {
+            // add station data
+            String connectedLines = data[4].toString();
+            Station newStation = Station(
+                id: data[0],
+                name: data[1],
+                pos: LatLng(data[2], data[3]),
+                lines: connectedLines.split(' '));
+            stationArr.add(newStation);
+
+            // add station marker
+            _stationCircles.add(newStation.getCircle());
+          }
+        }
+      },
+    );
+
+    // Firebase Stream listeners
+    _testListener();
+  }
+
+  @override
+  void deactivate() {
+    _testStream.cancel();
+    super.deactivate();
+  }
+
+  void _testListener() {
+    _testStream = db.child('mta_stream/1').onValue.listen((element) {
+      var data = Map<String, dynamic>.from(
+          element.snapshot.value as Map<dynamic, dynamic>);
+      // tools.log(data.runtimeType.toString());
+      // tools.log(data['011955SFT_242'].toString());
+    });
   }
 
   Future<void> loadData() async {
+    tools.log("CALLED");
     // load subway lines
-    String lineData =
-        await rootBundle.loadString('asset/processed/lines_processed.json');
-    lineMap = jsonDecode(lineData);
+    // String lineData = await rootBundle.loadString('asset/processed/lines_processed.json');
+    // lineMap = jsonDecode(lineData);
 
     // load subway stations
     await rootBundle.loadString('asset/processed/stations_processed.csv').then(
@@ -73,7 +115,7 @@ class _MapPageState extends State<MapPage> {
           }
         }
         _stationCircles = stationArr.map((st) => st.getCircle()).toSet();
-        print(_stationCircles.length);
+        tools.log(_stationCircles.length.toString());
         lineMap.forEach(
           (lineId, stations) {
             List<LatLng> currLineArr = [];

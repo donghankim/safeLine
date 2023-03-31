@@ -19,6 +19,21 @@ flutter pub get
 flutter pub run flutter_launcher_icons:main
 ```
 
+### Troubleshooting
+Sometimes there might be issues with CococaPods that require you to reinstall the Pods inside the ***safeLine/ios*** directory.
+In that case run following commands inside your command line prompt
+```bash
+cd safeLine/ios
+rm -rf Pods
+rm Podfile.lock
+pod install --repo-update
+
+cd ..
+flutter clean
+flutter pub get
+flutter run
+```
+
 ## Project Structure
 ```bash
 .

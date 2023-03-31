@@ -7,7 +7,6 @@ import os, time
 import pdb
 
 
-
 load_dotenv('../../.env')
 MTA_KEY = os.environ.get('MTA_API_KEY')
 all_feeds = {
