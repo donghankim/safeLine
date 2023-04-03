@@ -6,6 +6,8 @@ import pdb
 
 ASSET_PATH="../../asset/processed/"
 
+
+# old
 def process_station_data():
     df = pd.read_csv('mta_stations.csv')
     relevant_cols = ['GTFS Stop ID', 'Stop Name', 'GTFS Latitude', 'GTFS Longitude', 'Daytime Routes']
@@ -32,8 +34,17 @@ def process_station_data():
     all_stations.to_csv(f"{ASSET_PATH}stations_processed.csv", index = False)
 
 
+# new
+def clean_new():
+    df = pd.read_csv('raw_stations.csv')
+    relevant_cols = ['stop_id', 'stop_name', 'stop_lat', 'stop_lon']
+    all_stations = df[relevant_cols]
+    all_stations = all_stations.rename(columns = {'stop_id': 'id', 'stop_name':'name', 'stop_lat':'lat', 'stop_lon':'lon'})
+    all_stations.to_csv(f"{ASSET_PATH}stations_processed.csv", index = False)
 
-process_station_data()
+
+clean_new()
+# process_station_data()
 print("files processed and saved...")
 
 

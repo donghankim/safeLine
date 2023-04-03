@@ -7,7 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:safe_line/routes.dart';
 import 'package:safe_line/models/station.dart';
 import 'package:safe_line/models/train.dart';
-import 'package:safe_line/train_controller.dart';
+import 'package:safe_line/controllers/train_controller.dart';
+import 'package:safe_line/controllers/marker_controller.dart';
 import 'package:safe_line/constants.dart';
 import 'package:safe_line/customWidgets/report_widget.dart';
 import 'dart:developer' as tools;
@@ -21,7 +22,8 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   // mta station data
-  Map<String, Marker> currMarkers = <String, Marker>{};
+  Map<String, Marker> statMarkers = <String, Marker>{};
+  Map<String, Widget> movingMarkers = <String, Widget>{};
   final Map<String, Station> allStations = <String, Station>{};
   final Set<Circle> stationMarkers = <Circle>{};
 
@@ -70,10 +72,7 @@ class _MapPageState extends State<MapPage> {
           continue;
         } else {
           Station newStation = Station(
-              id: stationId,
-              name: data[1],
-              pos: LatLng(data[2], data[3]),
-              lines: data[4].toString().split(' '));
+              id: stationId, name: data[1], pos: LatLng(data[2], data[3]));
 
           // allStations.add(newStation);
           allStations[stationId] = newStation;
@@ -98,10 +97,14 @@ class _MapPageState extends State<MapPage> {
                 return circularLoader;
               } else {
                 final currTrains = snapshot.data as List<Train>;
+
                 for (var train in currTrains) {
-                  if (allStations.containsKey(train.nextSt)) {
-                    LatLng currPos = allStations[train.nextSt]!.pos;
-                    String currName = allStations[train.nextSt]!.name;
+                  if (allStations.containsKey(train.currSt) &&
+                      allStations.containsKey(train.nextSt)) {
+                    LatLng currPos = allStations[train.currSt]!.pos;
+                    LatLng nextPos = allStations[train.nextSt]!.pos;
+                    String currName = allStations[train.currSt]!.name;
+
                     BitmapDescriptor icon = trainIcon;
                     if (train.incidentReports.isNotEmpty) {
                       icon = incidentIcon;
@@ -114,15 +117,20 @@ class _MapPageState extends State<MapPage> {
                       rotVal = 180;
                     }
 
-                    Marker newMarker = Marker(
-                        markerId: MarkerId(train.id),
-                        position: currPos,
-                        onTap: () {
-                          reportModelView(context, train, currName);
-                        },
-                        icon: icon,
-                        rotation: rotVal);
-                    currMarkers[train.id] = newMarker;
+                    if (train.status == "STOPPED_AT" ||
+                        train.status == "INCOMING_AT") {
+                      Marker newMarker = Marker(
+                          markerId: MarkerId(train.id),
+                          position: currPos,
+                          onTap: () {
+                            reportModelView(context, train, currName);
+                          },
+                          icon: icon,
+                          rotation: rotVal);
+                      statMarkers[train.id] = newMarker;
+                    } else {
+                      // animate markers for moving trains
+                    }
                   }
                 }
                 return GoogleMap(
@@ -134,7 +142,7 @@ class _MapPageState extends State<MapPage> {
                   initialCameraPosition: _manhattan,
                   myLocationButtonEnabled: false,
                   circles: stationMarkers,
-                  markers: currMarkers.values.toSet(),
+                  markers: statMarkers.values.toSet(),
                 );
               }
             },

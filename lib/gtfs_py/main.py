@@ -66,29 +66,18 @@ class DataStreamer:
 
 
     @classmethod
-    def publish(cls, cnt = None, method_ = "thread"):
-        if cnt:
-            for n in range(cnt):
-                if method_ == "async":
-                    async_update()
-                elif method_ == "thread":
-                    threaded_update()
-                elif method_ == "multiprocess":
-                    pass
-                
-                try:
-                    cls.db.update(cls.stream)
-                except Exception:
-                    pass
-        
-        # cloud stream
-        else:
+    def publish(cls, method_ = "thread"):
+        if method_ == "thread":
             threaded_update()
-            try:
-                cls.db.update(cls.stream)
-                logging.info(f"pushed {len(cls.stream)}")
-            except Exception:
-                logging.error("failed to publish...")
+        elif method_ == "async":
+            async_update()
+
+        # publish to firebase
+        try:
+            cls.db.update(cls.stream)
+            logging.info(f"pushed {len(cls.stream)}")
+        except Exception:
+            logging.error("failed to publish...")
 
 
 def async_update():
@@ -108,22 +97,35 @@ def gtfs_feed(feed_key):
     
     for train in trains:
         line = train.route_id
-        if line in stream_lines:
+        if line in test_line:
             train_id = re.sub(r'[^\w\s]','', train.nyc_train_id).replace(" ", "")
+            inProgress = train.underway
+            if not inProgress and DataStreamer.stream.get(train_id):
+                del DataStreamer.stream[train_id]
+                DataStreamer.db.child('mta_stream').child(train_id).remove()
+                logging.info(f"removed {train_id}...")
+                continue
+
             status = train.location_status # STOPPED_AT, IN_TRANSIT_TO, INCOMING_AT
             headsign = train.headsign_text
-            heading_st = train.location
+            curr_st = train.location
             direction = train.direction
             delay = train.has_delay_alert
             if delay == None:
                 delay = False
+
+            if len(train.stop_time_updates) > 1:
+                next_st = train.stop_time_updates[1].stop_id
+            else:
+                next_st = curr_st
             
-            train_data = [line, train_id, headsign, heading_st, direction, status]
+            train_data = [line, train_id, headsign, curr_st, next_st, direction, status]
             if all(train_data):
                 data = {
                     "line": line,
                     "headsign": headsign,
-                    "next_st": heading_st[:3],
+                    "curr_st": curr_st,
+                    "next_st": next_st,
                     "direction": direction,
                     "status": status,
                     "isDelay": delay
@@ -153,7 +155,7 @@ stream_lines = ["A", "C", "E",
                 "7", "SIR"]
 
 if __name__ == '__main__':
-    if sys.argv[-1] == "--test":
+    if sys.argv[-1] == "--debug":
         stream_lines = test_line
     elif sys.argv[-1] == "--reset":
         DataStreamer.reset()

@@ -12,12 +12,12 @@ class Train {
   bool delayed = false;
   List<Report> incidentReports = [];
 
-  Train._internal(this.id, this.line, this.direction, this.headsign, this.nextSt,
+  Train._internal(this.id, this.line, this.direction, this.headsign, this.currSt, this.nextSt,
       this.status, this.delayed);
 
   factory Train(String id, Map<String, dynamic> data) {
-    return Train._internal(id, data['line'], data['direction'], data['headsign'],
+    return Train._internal(id, data['line'], data['direction'], data['headsign'], data['curr_st'],
         data['next_st'], data['status'], data['isDelay']);
   }
-  
+
 }

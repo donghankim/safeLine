@@ -29,6 +29,7 @@ class TrainController {
             Train currTrain;
             if (allTrains.containsKey(element.key)) {
               currTrain = allTrains[element.key]!;
+              currTrain.currSt = element.value['curr_st'];
               currTrain.nextSt = element.value['next_st'];
               currTrain.status = element.value['status'];
               currTrain.delayed = element.value['isDelay'];
