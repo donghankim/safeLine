@@ -8,31 +8,27 @@ class Report with ChangeNotifier {
   final String userId;
   final String trainId;
   String _description;
-  String _line = "";
   int _validityScore = 0;
   late final DateTime _postTime;
-
-  Report._interal(this.userId, this.trainId, this._description);
 
   factory Report(String trainId, String description) {
     final currUser = AuthService.firebase().currentUser!;
     return Report._interal(currUser.id, trainId, description);
   }
+  Report._interal(this.userId, this.trainId, this._description);
+
+  factory Report.fromFS(DocumentSnapshot snapshot) {
+    final data = snapshot.data() as Map<String, dynamic>;
+    return Report._external(data['userId'], data['trainId'], data['description'],
+        data['validity'], data['postTime'].toDate());
+  }
+  Report._external(this.userId, this.trainId, this._description,
+      this._validityScore, this._postTime);
+
 
   DateTime get postTime => _postTime;
   int get validity => _validityScore;
   String get description => _description;
-  String get trainLine => _line;
-
-  void setTrainLine(String newLine) {
-    _line = newLine;
-    notifyListeners();
-  }
-
-  void updateDescription(String newDesc) {
-    _description = newDesc;
-    notifyListeners();
-  }
 
   void incrementValidity() {
     _validityScore++;

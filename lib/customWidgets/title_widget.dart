@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:safe_line/customWidgets/figmaWidgets/figmaHelpers/transform/transform.dart';
 import 'package:safe_line/customWidgets/figmaWidgets/figmaHelpers/svg/svg.dart';
-import 'package:safe_line/constants.dart';
 
 class SafeLineWidget extends StatelessWidget {
   const SafeLineWidget({super.key});
@@ -13,19 +12,7 @@ class SafeLineWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const <Widget>[LogoWidget(), TitleWidget()],
-        ),
-        const Text(
-          "tagline here -----",
-          overflow: TextOverflow.visible,
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            height: 1.2102272033691406,
-            fontSize: 15.0,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w400,
-            color: accentColor,
-          ),
-        ),
+        )
       ],
     );
   }

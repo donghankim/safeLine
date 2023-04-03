@@ -110,15 +110,6 @@ class LandingPage extends StatelessWidget {
                             height: 60.0,
                             child: GeneratedGroup6Widget(),
                           ),
-                          Positioned(
-                            left: 117.0,
-                            top: 504.0,
-                            right: null,
-                            bottom: null,
-                            width: 345.77777099609375,
-                            height: 26.0,
-                            child: GeneratedTaglinehereWidget(),
-                          ),
                           const Positioned(
                             left: 128.0,
                             top: 546.0,

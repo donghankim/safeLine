@@ -10,6 +10,7 @@
 .history
 .svn/
 .env
+demo_vid/
 
 # IntelliJ related
 *.iml

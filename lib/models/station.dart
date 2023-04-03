@@ -22,8 +22,9 @@ class Station {
     return Circle(
       circleId: CircleId(pos.toString()),
       center: pos,
-      radius: 20,
+      radius: 25,
       fillColor: c ?? accentColor,
+      strokeWidth: 0,
     );
   }
 }

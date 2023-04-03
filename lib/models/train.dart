@@ -1,32 +1,23 @@
-import 'package:flutter/material.dart';
 import 'package:safe_line/models/report.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 
 class Train {
   final String id;
   final String line;
   final String direction;
   final String headsign;
-  String nextSt;
-  String nextStName = "";
+  String currSt = "";
+  String nextSt = "";
   String status = "PRE";
   bool delayed = false;
   List<Report> incidentReports = [];
 
-  Train(this.id, this.line, this.direction, this.headsign, this.nextSt,
+  Train._internal(this.id, this.line, this.direction, this.headsign, this.nextSt,
       this.status, this.delayed);
 
-
-  /*
-  Marker getMarker(LatLng pos, BitmapDescriptor icon, double iconRot) {
-    return Marker(
-        markerId: MarkerId(id),
-        position: pos,
-        onTap: () {
-
-        },
-        icon: icon,
-        rotation: iconRot);
+  factory Train(String id, Map<String, dynamic> data) {
+    return Train._internal(id, data['line'], data['direction'], data['headsign'],
+        data['next_st'], data['status'], data['isDelay']);
   }
-  */
+  
 }

@@ -11,15 +11,14 @@ void reportModelView(context, Train selTrain, String stationName) {
   if (selTrain.direction == "S") {
     dir = "Downtown";
   }
+  final TextEditingController descriptionController = TextEditingController();
 
   showMaterialModalBottomSheet(
     backgroundColor: Colors.transparent,
     context: context,
     builder: (BuildContext bc) {
-      final TextEditingController descriptionController =
-          TextEditingController();
       return Container(
-        height: deviceHeight(context) * 0.5,
+        height: deviceHeight(context) * 0.65,
         width: deviceWidth(context),
         decoration: const BoxDecoration(
           color: bgColor,
@@ -30,63 +29,66 @@ void reportModelView(context, Train selTrain, String stationName) {
         ),
         child: Column(
           children: [
-            const SizedBox(height: 10),
-
             // heading
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Next Station: $stationName",
-                      textAlign: TextAlign.start,
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Next St: $stationName",
+                        textAlign: TextAlign.start,
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                    Text(
-                      selTrain.headsign,
-                      textAlign: TextAlign.start,
-                      style: const TextStyle(
-                        fontSize: 15.0,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w300,
-                        color: Colors.black,
+                      const SizedBox(height: 2),
+                      Text(
+                        selTrain.headsign,
+                        textAlign: TextAlign.start,
+                        style: const TextStyle(
+                          fontSize: 15.0,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                    Text(
-                      "Train ID: ${selTrain.id}",
-                      textAlign: TextAlign.start,
-                      style: const TextStyle(
-                        fontSize: 15.0,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                      Text(
+                        "(ID: ${selTrain.id})",
+                        textAlign: TextAlign.start,
+                        style: const TextStyle(
+                          fontSize: 10.0,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w300,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    subwayLineIcon(selTrain.line, subbgColor),
-                    Text(
-                      dir,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15.0,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      subwayLineIcon(selTrain.line, subbgColor),
+                      Text(
+                        dir,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 15.0,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                  ],
-                )
-              ],
+                    ],
+                  )
+                ],
+              ),
             ),
 
             // textbox
@@ -107,15 +109,13 @@ void reportModelView(context, Train selTrain, String stationName) {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: SizedBox(
-                height: 150,
+                height: 100,
                 child: TextField(
                   controller: descriptionController,
                   maxLines: null,
                   expands: true,
                   keyboardType: TextInputType.text,
                   decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(
                         Radius.circular(20),
@@ -173,7 +173,7 @@ Widget subwayLineIcon(String line, MaterialColor bgColor) {
       width: 50,
       height: 50,
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(shape: BoxShape.circle, color: bgColor),
         child: Text(
           line,
