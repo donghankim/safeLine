@@ -9,7 +9,7 @@ class TrainController {
   Map<String, Train> allTrains = <String, Train>{};
 
   Future<void> _updateTrainReports(Train currTrain) async {
-    final snapshot = await FirebaseFirestore.instance
+    final snapshot = await _fs
         .collection('reports')
         .where('trainId', isEqualTo: currTrain.id)
         .get();
@@ -46,6 +46,4 @@ class TrainController {
     );
     return streamRes;
   }
-
-
 }

@@ -4,6 +4,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:safe_line/models/train.dart';
 import 'package:safe_line/models/report.dart';
 
+// viewing train reports
 void reportModelView(context, Train selTrain, String stationName) {
   int idx = subwayLines.indexOf(selTrain.line);
   MaterialColor subbgColor = subwayIconColor[idx];
@@ -12,6 +13,7 @@ void reportModelView(context, Train selTrain, String stationName) {
     dir = "Downtown";
   }
   final TextEditingController descriptionController = TextEditingController();
+  final int reportCnt = selTrain.incidentReports.length;
 
   showMaterialModalBottomSheet(
     backgroundColor: Colors.transparent,
@@ -30,20 +32,21 @@ void reportModelView(context, Train selTrain, String stationName) {
         child: Column(
           children: [
             // heading
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         "Next St: $stationName",
                         textAlign: TextAlign.start,
                         style: const TextStyle(
-                          fontSize: 20.0,
+                          fontSize: 17.0,
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
@@ -54,14 +57,14 @@ void reportModelView(context, Train selTrain, String stationName) {
                         selTrain.headsign,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
-                          fontSize: 15.0,
+                          fontSize: 17.0,
                           fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           color: Colors.black,
                         ),
                       ),
                       Text(
-                        "(ID: ${selTrain.id})",
+                        "ID: ${selTrain.id}",
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 10.0,
@@ -91,34 +94,43 @@ void reportModelView(context, Train selTrain, String stationName) {
               ),
             ),
 
-            // textbox
-            const SizedBox(height: 25),
-            const Align(
-              alignment: Alignment.center,
-              child: Text(
-                "Describe the Incident",
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontSize: 15.0,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey,
-                ),
+            // current reports
+            const SizedBox(height: 30),
+            Container(
+              width: deviceWidth(context) * 0.95,
+              height: deviceHeight(context) * 0.25,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: PageView.builder(
+                itemCount: reportCnt,
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    color: Colors.transparent,
+                    elevation: 0,
+                    child: incidentCard(selTrain.incidentReports[index]),
+                  );
+                },
               ),
             ),
+
+            // textbox
+            const SizedBox(height: 50),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: SizedBox(
-                height: 100,
+                height: 60,
                 child: TextField(
                   controller: descriptionController,
                   maxLines: null,
                   expands: true,
                   keyboardType: TextInputType.text,
                   decoration: const InputDecoration(
+                    labelText: "Please describe the incident",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(
-                        Radius.circular(20),
+                        Radius.circular(10),
                       ),
                     ),
                   ),
@@ -127,13 +139,11 @@ void reportModelView(context, Train selTrain, String stationName) {
             ),
 
             // submit button
-            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 Report newReport =
                     Report(selTrain.id, descriptionController.text);
                 await newReport.addReport();
-                selTrain.incidentReports.add(newReport);
 
                 if (context.mounted) {
                   Navigator.of(context).pop();
@@ -147,7 +157,6 @@ void reportModelView(context, Train selTrain, String stationName) {
                 }
               },
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(100, 30),
                 backgroundColor: const Color.fromARGB(255, 94, 78, 228),
                 foregroundColor: Colors.white,
                 elevation: 0,
@@ -163,6 +172,42 @@ void reportModelView(context, Train selTrain, String stationName) {
         ),
       );
     },
+  );
+}
+
+Widget incidentCard(Report currReport) {
+  return Padding(
+    padding: const EdgeInsets.all(15),
+    child: Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Time Posted: ${getTime(currReport.postTime)}",
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 25,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w700)),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Wrap(
+                children: [
+                  Text(
+                    "Incident Description:\n${currReport.description}",
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ],
+          )
+        ],
+      ),
+    ),
   );
 }
 

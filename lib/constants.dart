@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 const accentColor = Color.fromARGB(255, 94, 78, 228);
 const bgColor = Color.fromARGB(255, 242, 241, 251);
@@ -11,6 +12,10 @@ const circularLoader = Center(
   ),
 );
 
+String getTime(DateTime now) {
+  String formattedTime = DateFormat('HH:mm:ss').format(now);
+  return formattedTime;
+}
 
 const List<String> subwayLines = [
   "1",
