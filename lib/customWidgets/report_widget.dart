@@ -4,21 +4,20 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:safe_line/models/train.dart';
 import 'package:safe_line/models/report.dart';
 
-// viewing train reports
-void reportModelView(context, Train selTrain, String stationName) {
-  int idx = subwayLines.indexOf(selTrain.line);
+
+void reportModelView(context, Train currTrain) {
+  int idx = subwayLines.indexOf(currTrain.line);
   MaterialColor subbgColor = subwayIconColor[idx];
   String dir = "Uptown";
-  if (selTrain.direction == "S") {
+  if (currTrain.direction == "S") {
     dir = "Downtown";
   }
   final TextEditingController descriptionController = TextEditingController();
-  final int reportCnt = selTrain.incidentReports.length;
 
   showMaterialModalBottomSheet(
     backgroundColor: Colors.transparent,
     context: context,
-    builder: (BuildContext bc) {
+    builder: (BuildContext context) {
       return Container(
         height: deviceHeight(context) * 0.65,
         width: deviceWidth(context),
@@ -43,7 +42,7 @@ void reportModelView(context, Train selTrain, String stationName) {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Next St: $stationName",
+                        "St: ${currTrain.stName}",
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 17.0,
@@ -54,7 +53,7 @@ void reportModelView(context, Train selTrain, String stationName) {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        selTrain.headsign,
+                        currTrain.headsign,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 17.0,
@@ -64,7 +63,7 @@ void reportModelView(context, Train selTrain, String stationName) {
                         ),
                       ),
                       Text(
-                        "ID: ${selTrain.id}",
+                        "ID: ${currTrain.id}",
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 10.0,
@@ -77,7 +76,7 @@ void reportModelView(context, Train selTrain, String stationName) {
                   ),
                   Column(
                     children: [
-                      subwayLineIcon(selTrain.line, subbgColor),
+                      subwayLineIcon(currTrain.line, subbgColor),
                       Text(
                         dir,
                         textAlign: TextAlign.center,
@@ -96,24 +95,7 @@ void reportModelView(context, Train selTrain, String stationName) {
 
             // current reports
             const SizedBox(height: 30),
-            Container(
-              width: deviceWidth(context) * 0.95,
-              height: deviceHeight(context) * 0.25,
-              decoration: BoxDecoration(
-                color: accentColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: PageView.builder(
-                itemCount: reportCnt,
-                itemBuilder: (BuildContext context, int index) {
-                  return Card(
-                    color: Colors.transparent,
-                    elevation: 0,
-                    child: incidentCard(selTrain.incidentReports[index]),
-                  );
-                },
-              ),
-            ),
+            incidentSummary(context, currTrain),
 
             // textbox
             const SizedBox(height: 50),
@@ -142,8 +124,10 @@ void reportModelView(context, Train selTrain, String stationName) {
             ElevatedButton(
               onPressed: () async {
                 Report newReport =
-                    Report(selTrain.id, descriptionController.text);
+                    Report(currTrain.id, descriptionController.text);
                 await newReport.addReport();
+                currTrain.incidentReports.add(newReport);
+
 
                 if (context.mounted) {
                   Navigator.of(context).pop();
@@ -172,6 +156,50 @@ void reportModelView(context, Train selTrain, String stationName) {
         ),
       );
     },
+  );
+}
+
+Widget incidentSummary(BuildContext context, Train selTrain) {
+  int reportCnt = selTrain.incidentReports.length;
+  if (reportCnt == 0) {
+    return Container(
+      width: deviceWidth(context) * 0.95,
+      height: deviceHeight(context) * 0.25,
+      decoration: BoxDecoration(
+        color: accentColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Center(
+        child: Text(
+          "No reports recorded.",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 25.0,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+  return Container(
+    width: deviceWidth(context) * 0.95,
+    height: deviceHeight(context) * 0.25,
+    decoration: BoxDecoration(
+      color: accentColor,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: PageView.builder(
+      itemCount: reportCnt,
+      itemBuilder: (BuildContext context, int index) {
+        return Card(
+          color: Colors.transparent,
+          elevation: 0,
+          child: incidentCard(selTrain.incidentReports[index]),
+        );
+      },
+    ),
   );
 }
 
@@ -222,7 +250,6 @@ Widget subwayLineIcon(String line, MaterialColor bgColor) {
         decoration: BoxDecoration(shape: BoxShape.circle, color: bgColor),
         child: Text(
           line,
-          // overflow: TextOverflow.visible,
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 30.0,

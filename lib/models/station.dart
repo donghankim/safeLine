@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:safe_line/constants.dart';
 
+
 class Station {
   final String id;
   final String name;
@@ -18,8 +19,8 @@ class Station {
     return Circle(
       circleId: CircleId(pos.toString()),
       center: pos,
-      radius: 25,
-      fillColor: Colors.black,
+      radius: 30,
+      fillColor: accentColor,
       strokeWidth: 0,
     );
   }

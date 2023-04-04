@@ -3,8 +3,7 @@ import pyrebase
 import concurrent.futures
 from dotenv import load_dotenv
 from datetime import datetime
-import os, re, logging
-import sys
+import os, re, logging, time, sys
 import pdb
 
 if sys.platform == "darwin":
@@ -98,7 +97,7 @@ def gtfs_feed(feed_key):
     for train in trains:
         line = train.route_id
         if line in test_line:
-            train_id = re.sub(r'[^\w\s]','', train.nyc_train_id).replace(" ", "")
+            train_id = re.sub(r'[^\w\s]','', f"{train.nyc_train_id}_{train.trip_id}").replace(" ", "")
             inProgress = train.underway
             if not inProgress and DataStreamer.stream.get(train_id):
                 del DataStreamer.stream[train_id]
@@ -142,6 +141,8 @@ def main():
         except KeyboardInterrupt:
             logging.info("forced interruption...")
             break
+        
+        time.sleep(30)
 
 
 test_line = ["1"]
@@ -157,6 +158,7 @@ stream_lines = ["A", "C", "E",
 if __name__ == '__main__':
     if sys.argv[-1] == "--debug":
         stream_lines = test_line
+        gtfs_feed("ACE")
     elif sys.argv[-1] == "--reset":
         DataStreamer.reset()
         sys.exit("reset complete")

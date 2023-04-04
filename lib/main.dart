@@ -6,6 +6,7 @@ import 'package:safe_line/views/all_views.dart';
 import 'package:safe_line/routes.dart';
 import 'package:safe_line/constants.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
