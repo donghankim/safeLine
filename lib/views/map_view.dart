@@ -12,8 +12,8 @@ import 'package:safe_line/models/report.dart';
 import 'package:safe_line/controllers/train_controller.dart';
 import 'package:safe_line/constants.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'dart:developer' as tools;
 import 'dart:ui' as ui;
+// import 'dart:developer' as tools;
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
