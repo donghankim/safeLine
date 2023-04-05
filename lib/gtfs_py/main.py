@@ -26,6 +26,16 @@ all_feeds = {
         "SIR": NYCTFeed("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si", api_key = MTA_KEY)
 }
 
+# stream_lines = ["1", "Q", "3"]
+stream_lines = ["A", "C", "E", 
+                "B", "D", "F",
+                "M", "G", "J",
+                "Z", "N", "Q",
+                "R", "W", "L",
+                "1", "2", "3",
+                "4", "5", "6",
+                "7", "SIR"]
+
 logging.basicConfig(
     level = logging.INFO,
     filename = "mta_stream.log",
@@ -73,7 +83,7 @@ class DataStreamer:
 
         # publish to firebase
         try:
-            cls.db.update(cls.stream)
+            cls.db.set(cls.stream)
             logging.info(f"pushed {len(cls.stream)}")
         except Exception:
             logging.error("failed to publish...")
@@ -95,11 +105,13 @@ def gtfs_feed(feed_key):
     trains = feed.trips
     
     for train in trains:
+        status = train.location_status # STOPPED_AT, IN_TRANSIT_TO, INCOMING_AT
         line = train.route_id
-        if line in stream_lines:
-            train_id = re.sub(r'[^\w\s]','', f"{train.nyc_train_id}_{train.trip_id}").replace(" ", "")
+        if status == "STOPPED_AT" or status == "INCOMING_AT":
+            continue
+        elif line in stream_lines:
+            train_id = re.sub(r'[^\w\s]','', train.nyc_train_id).replace(" ", "")
             inProgress = train.underway
-            status = train.location_status # STOPPED_AT, IN_TRANSIT_TO, INCOMING_AT
 
             if not inProgress and DataStreamer.stream.get(train_id):
                 del DataStreamer.stream[train_id]
@@ -138,21 +150,11 @@ def main():
     DataStreamer.connect()
     while True:
         try:
-            DataStreamer.publish()
+            DataStreamer.publish(method_ = "async")
         except KeyboardInterrupt:
             logging.info("forced interruption...")
             break
-
-
-stream_lines = ["1", "Q", "3"]
-# stream_lines = ["A", "C", "E", 
-#                 "B", "D", "F",
-#                 "M", "G", "J",
-#                 "Z", "N", "Q",
-#                 "R", "W", "L",
-#                 "1", "2", "3",
-#                 "4", "5", "6",
-#                 "7", "SIR"]
+        
 
 if __name__ == '__main__':
     if sys.argv[-1] == "--debug":

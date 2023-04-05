@@ -12,6 +12,7 @@ import 'package:safe_line/models/report.dart';
 import 'package:safe_line/controllers/train_controller.dart';
 import 'package:safe_line/constants.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'dart:developer' as tools;
 import 'dart:ui' as ui;
 
 class MapPage extends StatefulWidget {
@@ -100,22 +101,24 @@ class _MapPageState extends State<MapPage> {
       builder: (context, _) {
         return Scaffold(
           body: StreamBuilder(
-            stream: tc.trainDataStream(context),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
+            stream: tc.trainDataStream(),
+            builder: (context, _ ) {
+              if (tc.allTrains.isEmpty) {
                 return circularLoader;
               } else {
-                final currTrains = snapshot.data as Set<Train>;
-                for (Train train in currTrains) {
-                  addMarker(train);
+                for (Train train in tc.allTrains.values) {
+                  updateMarker(train, true);
                 }
                 return Animarker(
                   shouldAnimateCamera: false,
-                  curve: Curves.ease,
-                  rippleRadius: 0.0,
+                  curve: Curves.bounceInOut,
                   zoom: 0.0,
-                  useRotation: false,
-                  duration: const Duration(seconds: 25),
+                  angleThreshold: 0.0,
+                  rippleRadius: 0.0,
+                  isActiveTrip: true,
+                  useRotation: true,
+                  rippleDuration: const Duration(seconds: 0),
+                  duration: const Duration(seconds: 200),
                   mapId: _controller.future.then<int>((value) => value.mapId),
                   markers: trainMarkers.values.toSet(),
                   child: GoogleMap(
@@ -127,6 +130,7 @@ class _MapPageState extends State<MapPage> {
                     initialCameraPosition: _manhattan,
                     myLocationButtonEnabled: false,
                     circles: tc.stationMarkers,
+                    markers: trainMarkers.values.toSet(),
                   ),
                 );
               }
@@ -167,62 +171,32 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  void addMarker(Train currTrain) {
+  void updateMarker(Train currTrain, bool newMarker) {
     Uint8List icon = tc.upIcon;
-    if (currTrain.direction == "S") {
-      icon = tc.downIcon;
-    } else if (currTrain.incidentReports.isNotEmpty) {
-      icon = tc.incidentIcon;
-    } else if (currTrain.delayed) {
-      icon = tc.delayIcon;
-    }
     if (currTrain.incidentReports.isNotEmpty) {
       icon = tc.incidentIcon;
-    } else if (currTrain.delayed) {
-      icon = tc.delayIcon;
     }
-
-    var newMarker = Marker(
+    Marker updatedMarker = Marker(
       markerId: MarkerId(currTrain.id),
       position: currTrain.currSt,
-      onTap: () {
-        reportModelView(context, currTrain);
-      },
+      anchor: const Offset(0, 0),
       icon: BitmapDescriptor.fromBytes(icon),
-    );
-    trainMarkers[currTrain.id] = newMarker;
-  }
-
-  void updateMarker(Train currTrain) {
-    if (trainMarkers.containsKey(currTrain.id)) {
-      trainMarkers.remove(currTrain.id);
-    }
-
-    Uint8List icon = tc.upIcon;
-    if (currTrain.direction == "S") {
-      icon = tc.downIcon;
-    } else if (currTrain.incidentReports.isNotEmpty) {
-      icon = tc.incidentIcon;
-    } else if (currTrain.delayed) {
-      icon = tc.delayIcon;
-    }
-    var updatedMarker = Marker(
-      markerId: MarkerId(currTrain.id),
-      position: currTrain.currSt,
       onTap: () {
-        reportModelView(context, currTrain);
+        reportModelView(context, currTrain.id);
       },
-      icon: BitmapDescriptor.fromBytes(icon),
     );
+
     trainMarkers[currTrain.id] = updatedMarker;
-
-    setState(() {
-      trainMarkers;
-    });
+    if (!newMarker) {
+      setState(() {
+        trainMarkers;
+      });
+    }
   }
 
   // train information view (modal screen)
-  void reportModelView(context, Train currTrain) {
+  void reportModelView(context, String currId) {
+    Train currTrain = tc.allTrains[currId]!;
     int idx = subwayLines.indexOf(currTrain.line);
     MaterialColor subbgColor = subwayIconColor[idx];
     String dir = "Uptown";
@@ -345,7 +319,7 @@ class _MapPageState extends State<MapPage> {
                       Report(currTrain.id, descriptionController.text);
                   await newReport.addReport();
                   currTrain.incidentReports.add(newReport);
-                  updateMarker(currTrain);
+                  updateMarker(currTrain, false);
 
                   if (context.mounted) {
                     Navigator.of(context).pop();

@@ -1,12 +1,11 @@
 import 'dart:typed_data';
-
-import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:safe_line/models/station.dart';
 import 'package:safe_line/models/train.dart';
 import 'package:safe_line/models/report.dart';
+// import 'dart:developer' as tools;
 
 class TrainController {
   final _db = FirebaseDatabase.instance.ref();
@@ -22,7 +21,6 @@ class TrainController {
   final Set<Circle> stationMarkers = <Circle>{};
 
   Map<String, Train> allTrains = <String, Train>{};
-  Map<String, Marker> statMarkers = <String, Marker>{};
 
   Future<void> _getTrainReports(Train currTrain) async {
     final snapshot = await _fs
@@ -34,7 +32,7 @@ class TrainController {
     }
   }
 
-  Stream<Set<Train>> trainDataStream(BuildContext context) {
+  Stream<Set<Train>> trainDataStream() {
     final trainStream = _db.child('mta_stream').onValue;
     final streamRes = trainStream.map(
       (event) {
@@ -43,17 +41,12 @@ class TrainController {
 
         final trainSet = dataMap.entries.map(
           (element) {
-            Train currTrain;
             var tdata = Map<String, dynamic>.from(element.value);
             var tid = element.key;
             String stName = allStations[tdata['curr_st']]!.name;
             LatLng currSt = allStations[tdata['curr_st']]!.pos;
-            LatLng nextSt = allStations[tdata['next_st']]!.pos;
 
-            // if (tdata['status'] == "IN_TRANSIT_TO") {
-            //   currSt = nextSt;
-            // }
-
+            Train currTrain;
             if (allTrains.containsKey(tid)) {
               currTrain = allTrains[tid]!;
               currTrain.stName = stName;
