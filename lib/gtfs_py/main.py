@@ -96,16 +96,17 @@ def gtfs_feed(feed_key):
     
     for train in trains:
         line = train.route_id
-        if line in test_line:
+        if line in stream_lines:
             train_id = re.sub(r'[^\w\s]','', f"{train.nyc_train_id}_{train.trip_id}").replace(" ", "")
             inProgress = train.underway
+            status = train.location_status # STOPPED_AT, IN_TRANSIT_TO, INCOMING_AT
+
             if not inProgress and DataStreamer.stream.get(train_id):
                 del DataStreamer.stream[train_id]
                 DataStreamer.db.child('mta_stream').child(train_id).remove()
                 logging.info(f"removed {train_id}...")
                 continue
 
-            status = train.location_status # STOPPED_AT, IN_TRANSIT_TO, INCOMING_AT
             headsign = train.headsign_text
             curr_st = train.location
             direction = train.direction
@@ -141,19 +142,17 @@ def main():
         except KeyboardInterrupt:
             logging.info("forced interruption...")
             break
-        
-        time.sleep(30)
 
 
-test_line = ["1"]
-stream_lines = ["A", "C", "E", 
-                "B", "D", "F",
-                "M", "G", "J",
-                "Z", "N", "Q",
-                "R", "W", "L",
-                "1", "2", "3",
-                "4", "5", "6",
-                "7", "SIR"]
+stream_lines = ["1", "Q", "3"]
+# stream_lines = ["A", "C", "E", 
+#                 "B", "D", "F",
+#                 "M", "G", "J",
+#                 "Z", "N", "Q",
+#                 "R", "W", "L",
+#                 "1", "2", "3",
+#                 "4", "5", "6",
+#                 "7", "SIR"]
 
 if __name__ == '__main__':
     if sys.argv[-1] == "--debug":

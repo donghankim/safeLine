@@ -1,9 +1,10 @@
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show Uint8List, rootBundle;
+import 'dart:typed_data';
 import 'dart:async';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
+import 'package:flutter_animarker/flutter_map_marker_animation.dart';
 import 'package:safe_line/routes.dart';
 import 'package:safe_line/models/station.dart';
 import 'package:safe_line/models/train.dart';
@@ -11,6 +12,7 @@ import 'package:safe_line/models/report.dart';
 import 'package:safe_line/controllers/train_controller.dart';
 import 'package:safe_line/constants.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'dart:ui' as ui;
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -20,21 +22,18 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  TrainController tc = TrainController();
-  Map<String, Marker> statMarkers = <String, Marker>{};
-
-  // gmaps
+  // google maps
   late String _gmapStyle;
-  late BitmapDescriptor trainIcon;
-  late BitmapDescriptor delayIcon;
-  late BitmapDescriptor incidentIcon;
   late GoogleMapController mapController;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   static const CameraPosition _manhattan = CameraPosition(
-    target: LatLng(40.785091, -73.968285),
+    target: LatLng(40.759296, -73.985573),
     zoom: 13,
   );
+
+  TrainController tc = TrainController();
+  Map<String, Marker> trainMarkers = <String, Marker>{};
 
   @override
   void initState() {
@@ -46,16 +45,26 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
+        targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
+  }
+
   // load assets
   Future<void> loadStations() async {
-    tc.trainIcon = await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(size: Size(5, 5)), 'asset/icons/train_up.png');
-    tc.delayIcon = await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(size: Size(15, 15)),
-        'asset/icons/train_delay.png');
-    tc.incidentIcon = await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(size: Size(5, 5)),
-        'asset/icons/train_alert.png');
+    tc.upIcon = await getBytesFromAsset('asset/icons/train_up.png', 75);
+    tc.downIcon = await getBytesFromAsset('asset/icons/train_down.png', 75);
+    tc.movingUpIcon = await getBytesFromAsset('asset/icons/moving_up.png', 75);
+    tc.movingDownIcon =
+        await getBytesFromAsset('asset/icons/moving_down.png', 75);
+    tc.delayIcon = await getBytesFromAsset('asset/icons/train_delay.png', 75);
+    tc.incidentIcon =
+        await getBytesFromAsset('asset/icons/train_alert.png', 85);
 
     var string =
         await rootBundle.loadString('asset/processed/stations_processed.csv');
@@ -98,18 +107,27 @@ class _MapPageState extends State<MapPage> {
               } else {
                 final currTrains = snapshot.data as Set<Train>;
                 for (Train train in currTrains) {
-                  addStatMarker(train);
+                  addMarker(train);
                 }
-                return GoogleMap(
-                  onMapCreated: (GoogleMapController controller) {
-                    _controller.complete(controller);
-                    mapController = controller;
-                    mapController.setMapStyle(_gmapStyle);
-                  },
-                  initialCameraPosition: _manhattan,
-                  myLocationButtonEnabled: false,
-                  circles: tc.stationMarkers,
-                  markers: statMarkers.values.toSet(),
+                return Animarker(
+                  shouldAnimateCamera: false,
+                  curve: Curves.ease,
+                  rippleRadius: 0.0,
+                  zoom: 0.0,
+                  useRotation: false,
+                  duration: const Duration(seconds: 25),
+                  mapId: _controller.future.then<int>((value) => value.mapId),
+                  markers: trainMarkers.values.toSet(),
+                  child: GoogleMap(
+                    onMapCreated: (gController) {
+                      _controller.complete(gController);
+                      mapController = gController;
+                      mapController.setMapStyle(_gmapStyle);
+                    },
+                    initialCameraPosition: _manhattan,
+                    myLocationButtonEnabled: false,
+                    circles: tc.stationMarkers,
+                  ),
                 );
               }
             },
@@ -149,55 +167,58 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  void updateMarker(Train currTrain) {
-    statMarkers.remove(currTrain.id);
-    BitmapDescriptor icon = tc.trainIcon;
+  void addMarker(Train currTrain) {
+    Uint8List icon = tc.upIcon;
+    if (currTrain.direction == "S") {
+      icon = tc.downIcon;
+    } else if (currTrain.incidentReports.isNotEmpty) {
+      icon = tc.incidentIcon;
+    } else if (currTrain.delayed) {
+      icon = tc.delayIcon;
+    }
     if (currTrain.incidentReports.isNotEmpty) {
       icon = tc.incidentIcon;
     } else if (currTrain.delayed) {
       icon = tc.delayIcon;
     }
-    double rotVal = 0;
-    if (currTrain.direction == "S") {
-      rotVal = 180;
-    }
-    Marker updatedMarker = Marker(
-        markerId: MarkerId(currTrain.id),
-        position: currTrain.currSt,
-        anchor: const Offset(0, 0),
-        onTap: () {
-          reportModelView(context, currTrain);
-        },
-        icon: icon,
-        rotation: rotVal);
-    statMarkers[currTrain.id] = updatedMarker;
 
-    setState(() {
-      statMarkers;
-    });
+    var newMarker = Marker(
+      markerId: MarkerId(currTrain.id),
+      position: currTrain.currSt,
+      onTap: () {
+        reportModelView(context, currTrain);
+      },
+      icon: BitmapDescriptor.fromBytes(icon),
+    );
+    trainMarkers[currTrain.id] = newMarker;
   }
 
-  void addStatMarker(Train currTrain) {
-    BitmapDescriptor icon = tc.trainIcon;
-    if (currTrain.incidentReports.isNotEmpty) {
+  void updateMarker(Train currTrain) {
+    if (trainMarkers.containsKey(currTrain.id)) {
+      trainMarkers.remove(currTrain.id);
+    }
+
+    Uint8List icon = tc.upIcon;
+    if (currTrain.direction == "S") {
+      icon = tc.downIcon;
+    } else if (currTrain.incidentReports.isNotEmpty) {
       icon = tc.incidentIcon;
     } else if (currTrain.delayed) {
       icon = tc.delayIcon;
     }
-    double rotVal = 0;
-    if (currTrain.direction == "S") {
-      rotVal = 180;
-    }
-    Marker newMarker = Marker(
-        markerId: MarkerId(currTrain.id),
-        position: currTrain.currSt,
-        anchor: const Offset(0, 0),
-        onTap: () {
-          reportModelView(context, currTrain);
-        },
-        icon: icon,
-        rotation: rotVal);
-    statMarkers[currTrain.id] = newMarker;
+    var updatedMarker = Marker(
+      markerId: MarkerId(currTrain.id),
+      position: currTrain.currSt,
+      onTap: () {
+        reportModelView(context, currTrain);
+      },
+      icon: BitmapDescriptor.fromBytes(icon),
+    );
+    trainMarkers[currTrain.id] = updatedMarker;
+
+    setState(() {
+      trainMarkers;
+    });
   }
 
   // train information view (modal screen)
@@ -291,7 +312,7 @@ class _MapPageState extends State<MapPage> {
 
               // current reports
               const SizedBox(height: 30),
-              incidentSummary(context, currTrain),
+              incidentSummary(currTrain),
 
               // textbox
               const SizedBox(height: 50),
@@ -303,6 +324,7 @@ class _MapPageState extends State<MapPage> {
                     controller: descriptionController,
                     maxLines: null,
                     expands: true,
+                    autocorrect: false,
                     keyboardType: TextInputType.text,
                     decoration: const InputDecoration(
                       labelText: "Please describe the incident",
@@ -355,7 +377,7 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Widget incidentSummary(BuildContext context, Train selTrain) {
+  Widget incidentSummary(Train selTrain) {
     int reportCnt = selTrain.incidentReports.length;
     if (reportCnt == 0) {
       return Container(
@@ -378,25 +400,26 @@ class _MapPageState extends State<MapPage> {
           ),
         ),
       );
+    } else {
+      return Container(
+        width: deviceWidth(context) * 0.95,
+        height: deviceHeight(context) * 0.25,
+        decoration: BoxDecoration(
+          color: accentColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: PageView.builder(
+          itemCount: reportCnt,
+          itemBuilder: (BuildContext context, int index) {
+            return Card(
+              color: Colors.transparent,
+              elevation: 0,
+              child: incidentCard(selTrain.incidentReports[index]),
+            );
+          },
+        ),
+      );
     }
-    return Container(
-      width: deviceWidth(context) * 0.95,
-      height: deviceHeight(context) * 0.25,
-      decoration: BoxDecoration(
-        color: accentColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: PageView.builder(
-        itemCount: reportCnt,
-        itemBuilder: (BuildContext context, int index) {
-          return Card(
-            color: Colors.transparent,
-            elevation: 0,
-            child: incidentCard(selTrain.incidentReports[index]),
-          );
-        },
-      ),
-    );
   }
 
   Widget incidentCard(Report currReport) {

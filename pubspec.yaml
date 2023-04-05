@@ -83,8 +83,11 @@ flutter:
     - asset/icons/profile.png
     - asset/icons/pop.png
     - asset/icons/train_up.png
+    - asset/icons/train_down.png
     - asset/icons/train_alert.png
     - asset/icons/train_delay.png
+    - asset/icons/moving_up.png
+    - asset/icons/moving_down.png
     - asset/icons/votes.png
     - asset/badges/verified.png
     - asset/badges/karma_points.png

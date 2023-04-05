@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,15 +7,16 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:safe_line/models/station.dart';
 import 'package:safe_line/models/train.dart';
 import 'package:safe_line/models/report.dart';
-import 'package:safe_line/customWidgets/report_widget.dart';
-import 'dart:developer' as tools;
 
 class TrainController {
   final _db = FirebaseDatabase.instance.ref();
   final FirebaseFirestore _fs = FirebaseFirestore.instance;
-  late BitmapDescriptor trainIcon;
-  late BitmapDescriptor delayIcon;
-  late BitmapDescriptor incidentIcon;
+  late Uint8List upIcon;
+  late Uint8List downIcon;
+  late Uint8List movingUpIcon;
+  late Uint8List movingDownIcon;
+  late Uint8List delayIcon;
+  late Uint8List incidentIcon;
 
   final Map<String, Station> allStations = <String, Station>{};
   final Set<Circle> stationMarkers = <Circle>{};
@@ -47,19 +50,21 @@ class TrainController {
             LatLng currSt = allStations[tdata['curr_st']]!.pos;
             LatLng nextSt = allStations[tdata['next_st']]!.pos;
 
+            // if (tdata['status'] == "IN_TRANSIT_TO") {
+            //   currSt = nextSt;
+            // }
+
             if (allTrains.containsKey(tid)) {
               currTrain = allTrains[tid]!;
               currTrain.stName = stName;
               currTrain.currSt = currSt;
-              currTrain.nextSt = nextSt;
               currTrain.status = tdata['status'];
               currTrain.delayed = tdata['isDelay'];
             } else {
-              currTrain = Train(tid, tdata, stName, currSt, nextSt);
+              currTrain = Train(tid, tdata, stName, currSt);
               allTrains[tid] = currTrain;
               _getTrainReports(currTrain);
             }
-
             return currTrain;
           },
         ).toSet();
@@ -68,5 +73,4 @@ class TrainController {
     );
     return streamRes;
   }
-
 }
